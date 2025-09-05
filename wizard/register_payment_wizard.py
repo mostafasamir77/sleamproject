@@ -1,0 +1,48 @@
+from odoo import api, fields, models
+
+
+class RegisterPaymentButton(models.TransientModel):
+    _name = 'register.payment.button'
+
+    account_move_id = fields.Many2one('account.move')
+
+    journal_id = fields.Many2one('account.journal')
+    amount = fields.Float()
+    date = fields.Date(default=fields.Date.today())
+    payment_method_id = fields.Many2one('account.payment.method.line')
+
+    def action_register_payment(self):
+        installment_lines = self.account_move_id.installments_ids
+        amount_value = self.amount
+
+        for line in installment_lines :
+            if amount_value <= 0:
+                break
+
+            # Calculate payment amount for this line
+            payment_amount = min(line.remaining, amount_value)
+
+
+            if payment_amount > 0:
+                # Update amounts
+                line.paid_amount += payment_amount
+                amount_value -= payment_amount
+
+
+            if line.remaining == 0:
+                line.state = 'done'
+
+        # Create payment using the register payment wizard
+        payment_wizard = self.env['account.payment.register'].with_context(
+            active_model='account.move',
+            active_ids=self.account_move_id.ids
+        ).create({
+            'journal_id': self.journal_id.id,
+            'payment_method_line_id': self.payment_method_id.id,
+            'amount': self.amount,
+            'payment_date': self.date,
+        })
+
+        # Create the payment
+        payments = payment_wizard.action_create_payments()
+

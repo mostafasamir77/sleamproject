@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="collect_advance_amount_view_form" model="ir.ui.view">
+        <field name="name">collect.advance.amount.view.form</field>
+        <field name="model">collect.advance.amount.button</field>
+        <field name="arch" type="xml">
+            <form string="">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="journal_id"/>
+                            <field name="amount"/>
+                        </group>
+                        <group>
+                            <field name="date"/>
+                            <field name="payment_method_id"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="Confirm" type="object" name="action_collect_advance_amount" class="btn-primary"/>
+                        <button string="Cancel" special="cancel" class="btn-secondary"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="collect_advance_amount_button_wizard_action" model="ir.actions.act_window">
+        <field name="name">Advance Amount Payment Button</field>
+        <field name="res_model">collect.advance.amount.button</field>
+        <field name="target">new</field>
+        <field name="view_mode">form</field>
+    </record>
+
+</odoo>

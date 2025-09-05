@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_move_inherit_view" model="ir.ui.view">
+        <field name="name">account.move.view.form.inherit</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Finance Information">
+                    <group>
+                        <group>
+                            <field name="installment_number" readonly="state != 'draft' " />
+                            <field name="first_installment_date" readonly="state != 'draft' "  />
+                        </group>
+                        <group>
+                            <div class="o_row">
+                                <label for="advance_amount_type" string="Advance Amount"  readonly="state != 'draft' " />
+                                <field name="advance_amount_type" readonly="state != 'draft' " />
+                                <field name="advance_amount_value" readonly="state != 'draft' "/>
+                            </div>
+                            <field name="paid_advance_amount" />
+                            <field name="installment_value"  />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Installment">
+                            <field name="installments_ids" readonly="state != 'draft'" >
+                                <list editable="bottom" create="0" delete="0" edit="0">
+                                    <field name="date" />
+                                    <field name="name" />
+                                    <field name="amount" />
+                                    <field name="paid_amount" />
+                                    <field name="remaining" />
+                                    <field name="payment_state" />
+                                    <field name="state" />
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </page>
+            </xpath>
+
+            <xpath expr="//header" position="inside">
+                <button string="Register Payment" 
+                        name="register_payment_action" 
+                        type="object" 
+                        invisible="state != 'posted' " 
+                        class="btn-secondary"/>
+
+                <button string="Collect Advance Amount" 
+                        name="action_pay_advance_amount" 
+                        type="object" 
+                        invisible="state != 'draft' or remaining_advance_amount == 0"
+                        class="btn-secondary"/>
+
+            </xpath>    
+
+            <xpath expr="//button[@name='button_draft']" position="attributes">
+                <attribute name="invisible">matched_payment_ids or state == 'draft'</attribute>
+            </xpath>
+
+            <xpath expr="//button[@id='account_invoice_payment_btn']" position="replace"/>
+            <xpath expr="//button[@id='account_invoice_payment_secondary_btn']" position="replace"/>
+        </field>
+    </record>
+
+</odoo>
+
+<!-- 
+                        <button name="action_register_payment" id="account_invoice_payment_btn" type="object" class="oe_highlight" invisible="(state != 'posted'
+                                                                                                                                                or payment_state not in ('not_paid', 'partial', 'in_payment')
+                                                                                                                                                or move_type not in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt') 
+                                                                                                                                                or invoice_has_outstanding)" 
+                                                                                                                                                context="{'dont_redirect_to_payments': True, 'display_account_trust': True}"
+                                                                                                                                                string="Pay" data-hotkey="g" 
+                                                                                                                                                groups="account.group_account_invoice"/>
+                        Register Payment (only invoices / receipts, with outstanding payments) 
+                        <button name="action_register_payment" id="account_invoice_payment_secondary_btn" type="object" invisible="(state != 'posted'
+                                                                                                                                    or payment_state not in ('not_paid', 'partial', 'in_payment')            
+                                                                                                                                    or move_type not in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt')
+                                                                                                                                    or not invoice_has_outstanding)"
+                                                                                                                                    context="{'dont_redirect_to_payments': True, 'display_account_trust': True}"
+                                                                                                                                    string="Pay" data-hotkey="g"
+                                                                                                                                    groups="account.group_account_invoice"/>
+                        
+                        
+                        
+                        <button name="action_register_payment" id="account_invoice_payment_btn" type="object" class="oe_highlight" invisible="(                                     state != 'posted'                                     or payment_state not in ('not_paid', 'partial', 'in_payment')                                     or move_type not in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt')                                     or invoice_has_outstanding                                 )" context="{'dont_redirect_to_payments': True, 'display_account_trust': True}" string="Pay" data-hotkey="g" groups="account.group_account_invoice"/>
+                        Register Payment (only invoices / receipts, with outstanding payments)
+                        <button name="action_register_payment" id="account_invoice_payment_secondary_btn" type="object" invisible="(                                     state != 'posted'                                     or payment_state not in ('not_paid', 'partial', 'in_payment')                                     or move_type not in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt')                                     or not invoice_has_outstanding                                 )" context="{'dont_redirect_to_payments': True, 'display_account_trust': True}" string="Pay" data-hotkey="g" groups="account.group_account_invoice"/>
+                     
+                     
+                        <button name="action_register_payment" id="account_invoice_payment_btn" type="object" class="oe_highlight" invisible="1"/>
+                        Register Payment (only invoices / receipts, with outstanding payments)
+                        <button name="action_register_payment" id="account_invoice_payment_secondary_btn" type="object" invisible="1"/> -->

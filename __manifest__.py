@@ -1,0 +1,23 @@
+{
+    'name': 'Installments',
+    'version': '18.1',
+    'description': 'crate installments',
+    'summary': '',
+    'author': 'Mostafa Samir',
+    'depends': [
+        'base', 'account' , 'sale_management'
+    ],
+    'data': [
+        'security/ir.model.access.csv',
+        'views/account_move_inherit_view.xml',
+        'views/installments_view.xml',
+        'wizard/register_payment_wizard_view.xml',
+        'wizard/collect_advance_amount_wizard_view.xml',
+        
+    ],
+    'auto_install': False,
+    'application': True,
+    'assets': {
+        
+    }
+}
