@@ -70,6 +70,13 @@ class AccountMove(models.Model):
                 installment_date += relativedelta(months=1)
                 i += 1
 
+    def action_post(self):
+        res = super().action_post()
+        
+        if self.remaining_advance_amount != 0:
+            raise UserError(f"you have to pay advance amount first: {self.remaining_advance_amount}")
+
+        return res
 
 
     @api.model
