@@ -114,6 +114,20 @@ class AccountMove(models.Model):
         return action
 
 
+    def open_related_installments(self):
+        self.ensure_one()
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Installments',
+            'res_model': 'account.installments',
+            'view_mode': 'list,form',
+            'domain': [
+                ('account_move_id', '=', self.id),
+            ],
+            'target': 'current',
+        }
+
 
 class Installments(models.Model):
     _name = 'account.installments'
@@ -155,3 +169,6 @@ class Installments(models.Model):
                 rec.payment_state = 'fully_paid'
             else:
                 rec.payment_state = 'partial'
+
+    def action_print_installment(self):
+        pass

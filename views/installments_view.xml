@@ -28,8 +28,6 @@
         <field name="name">Installments Action</field>
         <field name="res_model">account.installments</field>
         <field name="view_mode">list,form</field>
-        <!-- <field name="domain">[]</field>
-        <field name="context">{}</field> -->
     </record>
 
     <menuitem

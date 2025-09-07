@@ -13,11 +13,12 @@
         'views/installments_view.xml',
         'wizard/register_payment_wizard_view.xml',
         'wizard/collect_advance_amount_wizard_view.xml',
+        'report/installment_report.xml',
         
     ],
     'auto_install': False,
     'application': True,
     'assets': {
-        
-    }
+        'web.report_assets_pdf': ['installments/static/src/css/font.css'],
+    },
 }
