@@ -42,8 +42,7 @@ class ChangeInvoiceState(models.TransientModel):
 
     def action_confirm(self):
         if self.change_type == 'return' :
-
-            pass
+            self.account_move_id.installments_ids.sudo().unlink()
             
             # self.env['account_move'].create({
             #     'move_type': 'out_invoice' ,

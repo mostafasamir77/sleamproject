@@ -61,7 +61,7 @@ class AccountMove(models.Model):
             i = 0
             installment_date = rec.first_installment_date
             while i < rec.installment_number:
-                self.env['account.installments'].create({
+                self.env['account.installments'].sudo().create({
                     'account_move_id': rec.id,
                     'date': installment_date,
                     'name': f"{i + 1}/{rec.installment_number}",
@@ -92,7 +92,7 @@ class AccountMove(models.Model):
 
         if 'first_installment_date' in vals or 'installment_number' in vals or 'vehicle_price' in vals or 'advance_amount_type' in vals or 'advance_amount_value' in vals:
             for rec in self:
-                rec.installments_ids.unlink()  
+                rec.installments_ids.sudo().unlink()  
                 rec.create_installments_lines()
         return res
     
@@ -163,7 +163,18 @@ class Installments(models.Model):
         ('late','Late'),
         ('done','Done'),
     ],default="not_yet_due")
-    
+
+
+    def automated_action_check_installments_state(self):
+        for line in self.env['account.installments'].search([]):
+            if line.remaining == 0 :
+                line.state = 'done'
+            elif line.date < fields.Date.today():
+                line.state = 'not_yet_due'
+            elif line.date == fields.Date.today():
+                line.state = 'due'
+            elif line.date < fields.Date.today():
+                line.state = 'late'    
 
     @api.depends('amount', 'paid_amount')
     def _compute_remaining(self):
