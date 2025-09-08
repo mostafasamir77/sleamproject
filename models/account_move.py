@@ -166,15 +166,16 @@ class Installments(models.Model):
 
 
     def automated_action_check_installments_state(self):
+        today = fields.Date.today()
         for line in self.env['account.installments'].search([]):
-            if line.remaining == 0 :
+            if line.remaining == 0:
                 line.state = 'done'
-            elif line.date < fields.Date.today():
+            elif line.date > today:
                 line.state = 'not_yet_due'
-            elif line.date == fields.Date.today():
+            elif line.date == today:
                 line.state = 'due'
-            elif line.date < fields.Date.today():
-                line.state = 'late'    
+            elif line.date < today:
+                line.state = 'late'  
 
     @api.depends('amount', 'paid_amount')
     def _compute_remaining(self):
