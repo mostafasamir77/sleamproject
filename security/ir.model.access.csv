@@ -2,6 +2,7 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_account_installments,access_account_installments,model_account_installments,,1,1,1,1
 access_register_payment_button,access_register_payment_button,model_register_payment_button,,1,1,1,1
 access_collect_advance_amount_button,access_collect_advance_amount_button,model_collect_advance_amount_button,,1,1,1,1
+access_change_invoice_state_button,access_change_invoice_state_button,model_change_invoice_state_button,,1,1,1,1
 
 
 

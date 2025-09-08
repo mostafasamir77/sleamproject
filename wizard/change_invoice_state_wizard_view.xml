@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="change_invoice_state_view_form" model="ir.ui.view">
+        <field name="name">Change Invoice State</field>
+        <field name="model">change.invoice.state.button</field>
+        <field name="arch" type="xml">
+            <form string="">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="change_type"/>
+                            <field name="targeted_products_ids" widget="many2many_tags" />
+                            
+                        </group>
+                        <group>
+                            <field name="deduct"/>
+                            <field name="new_product_ids" widget="many2many_tags" invisible=" change_type == 'return' " />
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="Confirm" type="object" name="action_confirm" class="btn-primary"/>
+                        <button string="Cancel" special="cancel" class="btn-secondary"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="change_invoice_state_button_wizard_action" model="ir.actions.act_window">
+        <field name="name">Change Invoice State</field>
+        <field name="res_model">change.invoice.state.button</field>
+        <field name="target">new</field>
+        <field name="view_mode">form</field>
+    </record>
+
+</odoo>

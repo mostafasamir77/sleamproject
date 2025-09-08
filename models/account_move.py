@@ -114,6 +114,17 @@ class AccountMove(models.Model):
         return action
 
 
+    def change_invoice_state_action(self):
+        """ Open wizard view """
+
+        action = self.env['ir.actions.actions']._for_xml_id('installments.change_invoice_state_button_wizard_action')
+        action['context'] = {
+                'default_account_move_id' : self.id,
+                'default_products_in_invoice' : self.invoice_line_ids.mapped('product_id').ids,
+            }
+        return action
+
+
     def open_related_installments(self):
         self.ensure_one()
 
@@ -169,6 +180,3 @@ class Installments(models.Model):
                 rec.payment_state = 'fully_paid'
             else:
                 rec.payment_state = 'partial'
-
-    def action_print_installment(self):
-        pass

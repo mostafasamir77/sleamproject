@@ -34,7 +34,7 @@
                                     <field name="remaining" />
                                     <field name="payment_state" />
                                     <field name="state" />
-                                    <button string="Print" name="action_print_installment" type="object" class="oe_highlight" invisible="payment_state != 'fully_paid' "/>
+                                    <button string="Print" name="%(action_print_installment)d" type="action" class="oe_highlight" invisible="payment_state != 'fully_paid' "/>
                                 </list>
                             </field>
                         </page>
@@ -61,6 +61,11 @@
                         type="object" 
                         invisible="state != 'draft' or remaining_advance_amount == 0"
                         class="btn-secondary"/>
+
+                <button string="Change Invoice State"
+                        name="change_invoice_state_action" 
+                        type="object" 
+                        class="oe_highlight"/>
 
             </xpath>    
 

@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
     <record id="action_print_installment" model="ir.actions.report">
@@ -9,268 +8,259 @@
         <field name="binding_type">report</field>
         <field name="report_name">installments.installment_report_template</field>
     </record>
-<template id="installment_report_template">
-    <t t-call="web.html_container">
-        <t t-foreach="docs" t-as="o">
-            <div class="page" dir="rtl">
-                <style>
-                    @font-face {
-                            font-family: 'Amiri';
-                            src: url(data:font/truetype;charset=utf-8;base64,[BASE64_DATA_FOR_Amiri-Regular.ttf]) format('truetype');
-                            font-weight: normal;
-                        }
 
-                    body {
-                        font-family: 'Amiri', 'DejaVu Sans', 'Arial Unicode MS', sans-serif !important;
-                        direction: rtl;               
-                    }
+    <template id="installment_report_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.html_container"/>
+                    <div class="page" dir="rtl">
+                        <style>
+                            .page {
+                                color: #333;
+                                line-height: 1.6;
+                                padding: 15px;
+                                background: white;
+                                direction: rtl;
+                                text-align: right;
+                            }
+                            .report-header {
+                                border-bottom: 2px solid #ddd;
+                                padding-bottom: 15px;
+                                margin-bottom: 25px;
+                                overflow: hidden;
+                            }
+                            .report-title {
+                                font-size: 22px;
+                                font-weight: bold;
+                                margin-bottom: 5px;
+                                color: #333;
+                            }
+                            .status-paid {
+                                color: #28a745;
+                                font-size: 12px;
+                                font-weight: bold;
+                            }
+                            .company-info {
+                                float: left;
+                                text-align: left;
+                                color: #666;
+                                font-size: 14px;
+                                width: 45%;
+                            }
+                            .company-name {
+                                font-size: 16px;
+                                font-weight: bold;
+                                color: #333;
+                                margin-bottom: 5px;
+                            }
+                            .left-section {
+                                float: right;
+                                width: 45%;
+                            }
+                            .section-header {
+                                font-size: 12px;
+                                font-weight: bold;
+                                color: #666;
+                                margin-bottom: 8px;
+                            }
+                            .billing-info {
+                                margin-bottom: 25px;
+                                overflow: hidden;
+                            }
+                            .billing-details {
+                                font-size: 13px;
+                                line-height: 1.5;
+                            }
+                            .report-details {
+                                font-size: 13px;
+                                line-height: 1.5;
+                            }
+                            .details-table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                margin: 15px 0;
+                                font-size: 13px;
+                            }
+                            .details-table thead {
+                                background-color: #f5f5f5;
+                            }
+                            .details-table th {
+                                padding: 10px 12px;
+                                text-align: center;
+                                font-weight: bold;
+                                color: #333;
+                                border: 1px solid #ddd;
+                                font-size: 12px;
+                            }
+                            .details-table td {
+                                padding: 10px 12px;
+                                border: 1px solid #ddd;
+                                text-align: center;
+                            }
+                            .totals-section {
+                                margin-top: 25px;
+                                float: left;
+                                width: 300px;
+                                clear: both;
+                            }
+                            .totals-table {
+                                width: 100%;
+                                font-size: 13px;
+                            }
+                            .totals-table td {
+                                padding: 6px 0;
+                                border: none;
+                            }
+                            .totals-table .total-row {
+                                border-top: 2px solid #ddd;
+                                font-weight: bold;
+                                font-size: 15px;
+                                color: #333;
+                            }
+                            .totals-table .total-row td {
+                                padding-top: 12px;
+                            }
+                        </style>
 
-                    .page {
-                        font-family: 'Amiri', 'DejaVu Sans', 'Arial Unicode MS', sans-serif !important;
-                        color: #333;
-                        line-height: 1.6;
-                        padding: 15px;
-                        background: white;
-                        direction: rtl;
-                        text-align: right;
-                    }
-                    .report-header {
-                        border-bottom: 2px solid #ddd;
-                        padding-bottom: 15px;
-                        margin-bottom: 25px;
-                        overflow: hidden;
-                    }
-                    .report-title {
-                        font-size: 22px;
-                        font-weight: bold;
-                        margin-bottom: 5px;
-                        color: #333;
-                    }
-                    .status-paid {
-                        color: #28a745;
-                        font-size: 12px;
-                        font-weight: bold;
-                    }
-                    .company-info {
-                        float: left;
-                        text-align: left;
-                        color: #666;
-                        font-size: 14px;
-                        width: 45%;
-                    }
-                    .company-name {
-                        font-size: 16px;
-                        font-weight: bold;
-                        color: #333;
-                        margin-bottom: 5px;
-                    }
-                    .left-section {
-                        float: right;
-                        width: 45%;
-                    }
-                    .section-header {
-                        font-size: 12px;
-                        font-weight: bold;
-                        color: #666;
-                        margin-bottom: 8px;
-                    }
-                    .billing-info {
-                        margin-bottom: 25px;
-                        overflow: hidden;
-                    }
-                    .billing-details {
-                        font-size: 13px;
-                        line-height: 1.5;
-                    }
-                    .report-details {
-                        font-size: 13px;
-                        line-height: 1.5;
-                    }
-                    .details-table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        margin: 15px 0;
-                        font-size: 13px;
-                    }
-                    .details-table thead {
-                        background-color: #f5f5f5;
-                    }
-                    .details-table th {
-                        padding: 10px 12px;
-                        text-align: center;
-                        font-weight: bold;
-                        color: #333;
-                        border: 1px solid #ddd;
-                        font-size: 12px;
-                    }
-                    .details-table td {
-                        padding: 10px 12px;
-                        border: 1px solid #ddd;
-                        text-align: center;
-                    }
-                    .totals-section {
-                        margin-top: 25px;
-                        float: left;
-                        width: 300px;
-                        clear: both;
-                    }
-                    .totals-table {
-                        width: 100%;
-                        font-size: 13px;
-                    }
-                    .totals-table td {
-                        padding: 6px 0;
-                        border: none;
-                    }
-                    .totals-table .total-row {
-                        border-top: 2px solid #ddd;
-                        font-weight: bold;
-                        font-size: 15px;
-                        color: #333;
-                    }
-                    .totals-table .total-row td {
-                        padding-top: 12px;
-                    }
-                </style>
-
-                <!-- Report Header -->
-                <div class="report-header clearfix">
-                    <div class="left-section">
-                        <div class="report-title">تقرير الأقساط</div>
-                        <div class="status-paid">الحالة: مدفوع</div>
-                    </div>
-                    <div class="company-info">
-                        <div class="company-name">شركة سليم</div>
-                        <div>
-                            البحر الأعظم، شارع كولدير<br/>الجيزة، مصر
+                        <!-- Report Header -->
+                        <div class="report-header clearfix">
+                            <div class="left-section">
+                                <div class="report-title">تقرير الأقساط</div>
+                                <div class="status-paid">الحالة: مدفوع</div>
+                            </div>
+                            <div class="company-info">
+                                <div class="company-name">شركة سليم</div>
+                                <div>
+                                    البحر الأعظم، شارع كولدير<br/>الجيزة، مصر
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Billing and Report Details -->
-                <div class="billing-info clearfix">
-                    <div class="left-section">
-                        <div class="section-header">معلومات العميل</div>
-                        <div class="billing-details">
-                            <strong>
-                                <t t-if="o.account_move_id and o.account_move_id.partner_id">
-                                    <t t-esc="o.account_move_id.partner_id.name"/>
-                                </t>
-                                <t t-if="not (o.account_move_id and o.account_move_id.partner_id)">
-                                    اسم العميل
-                                </t>
-                            </strong><br/>
-                            <t t-if="o.account_move_id.partner_id and o.account_move_id.partner_id.street">
-                                <t t-esc="o.account_move_id.partner_id.street"/><br/>
-                            </t>
-                            <t t-if="o.account_move_id.partner_id and o.account_move_id.partner_id.city">
-                                <t t-esc="o.account_move_id.partner_id.city"/>
-                                <t t-if="o.account_move_id.partner_id.state_id">
-                                    ، <t t-esc="o.account_move_id.partner_id.state_id.code"/>
-                                </t>
-                                <t t-if="o.account_move_id.partner_id.zip">
-                                    <t t-esc="o.account_move_id.partner_id.zip"/>
-                                </t>
-                                <br/>
-                            </t>
-                            <t t-if="o.account_move_id.partner_id and o.account_move_id.partner_id.email">
-                                <t t-esc="o.account_move_id.partner_id.email"/>
-                            </t>
-                        </div>
-                    </div>
-                    <div class="right-section">
-                        <div class="section-header">تفاصيل التقرير</div>
-                        <div class="report-details">
-                            <strong>رقم التقرير:</strong> 
-                            <t t-if="o.id">
-                                RPT-<span t-esc="'%03d' % o.id"/>-001
-                            </t>
-                            <t t-if="not o.id">RPT-001-001</t>
-                            <br/>
-                            <strong>تاريخ الإصدار:</strong> 
-                            <t t-if="o.date">
-                                <span t-field="o.date"/>
-                            </t>
-                            <t t-if="not o.date">
-                                <span t-esc="context_today().strftime('%d/%m/%Y')"/>
-                            </t>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Payment Details Section -->
-                <div style="clear: both;">
-                    <div class="section-header">تفاصيل الدفع</div>
-                    <table class="details-table">
-                        <thead>
-                            <tr>
-                                <th>اسم العميل</th>
-                                <th>المبلغ</th>
-                                <th>رقم القسط</th>
-                                <th>التاريخ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <t t-if="o.account_move_id and o.account_move_id.partner_id">
-                                        <t t-esc="o.account_move_id.partner_id.name"/>
+                        <!-- Billing and Report Details -->
+                        <div class="billing-info clearfix">
+                            <div class="left-section">
+                                <div class="section-header">معلومات العميل</div>
+                                <div class="billing-details">
+                                    <strong>
+                                        <t t-if="o.account_move_id and o.account_move_id.partner_id">
+                                            <t t-esc="o.account_move_id.partner_id.name"/>
+                                        </t>
+                                        <t t-if="not (o.account_move_id and o.account_move_id.partner_id)">
+                                            اسم العميل
+                                        </t>
+                                    </strong><br/>
+                                    <t t-if="o.account_move_id.partner_id and o.account_move_id.partner_id.street">
+                                        <t t-esc="o.account_move_id.partner_id.street"/><br/>
                                     </t>
-                                    <t t-if="not (o.account_move_id and o.account_move_id.partner_id)">
-                                        اسم العميل
+                                    <t t-if="o.account_move_id.partner_id and o.account_move_id.partner_id.city">
+                                        <t t-esc="o.account_move_id.partner_id.city"/>
+                                        <t t-if="o.account_move_id.partner_id.state_id">
+                                            ، <t t-esc="o.account_move_id.partner_id.state_id.code"/>
+                                        </t>
+                                        <t t-if="o.account_move_id.partner_id.zip">
+                                            <t t-esc="o.account_move_id.partner_id.zip"/>
+                                        </t>
+                                        <br/>
                                     </t>
-                                </td>
-                                <td>
-                                    <t t-if="o.amount">
-                                        <span t-field="o.amount"/>
+                                    <t t-if="o.account_move_id.partner_id and o.account_move_id.partner_id.email">
+                                        <t t-esc="o.account_move_id.partner_id.email"/>
                                     </t>
-                                    <t t-if="not o.amount">0.00 ج.م</t>
-                                </td>
-                                <td>
-                                    <t t-if="o.name">
-                                        <t t-esc="o.name"/>
+                                </div>
+                            </div>
+                            <div class="right-section">
+                                <div class="section-header">تفاصيل التقرير</div>
+                                <div class="report-details">
+                                    <strong>رقم التقرير:</strong> 
+                                    <t t-if="o.id">
+                                        RPT-<span t-esc="'%03d' % o.id"/>-001
                                     </t>
-                                    <t t-if="not o.name">1 من 1</t>
-                                </td>
-                                <td>
+                                    <t t-if="not o.id">RPT-001-001</t>
+                                    <br/>
+                                    <strong>تاريخ الإصدار:</strong> 
                                     <t t-if="o.date">
                                         <span t-field="o.date"/>
                                     </t>
                                     <t t-if="not o.date">
                                         <span t-esc="context_today().strftime('%d/%m/%Y')"/>
                                     </t>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                                </div>
+                            </div>
+                        </div>
 
-                <!-- Totals Section -->
-                <div class="totals-section">
-                    <table class="totals-table">
-                        <tr>
-                            <td>الإجمالي:</td>
-                            <td style="text-align: left;">
-                                <t t-if="o.amount">
-                                    <span t-field="o.amount"/>
-                                </t>
-                                <t t-if="not o.amount">0.00 ج.م</t>
-                            </td>
-                        </tr>
-                        <tr class="total-row">
-                            <td>إجمالي المدفوع:</td>
-                            <td style="text-align: left;">
-                                <t t-if="o.amount">
-                                    <span t-field="o.amount"/>
-                                </t>
-                                <t t-if="not o.amount">0.00 ج.م</t>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
+                        <!-- Payment Details Section -->
+                        <div style="clear: both;">
+                            <div class="section-header">تفاصيل الدفع</div>
+                            <table class="details-table">
+                                <thead>
+                                    <tr>
+                                        <th>اسم العميل</th>
+                                        <th>المبلغ</th>
+                                        <th>رقم القسط</th>
+                                        <th>التاريخ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <t t-if="o.account_move_id and o.account_move_id.partner_id">
+                                                <t t-esc="o.account_move_id.partner_id.name"/>
+                                            </t>
+                                            <t t-if="not (o.account_move_id and o.account_move_id.partner_id)">
+                                                اسم العميل
+                                            </t>
+                                        </td>
+                                        <td>
+                                            <t t-if="o.amount">
+                                                <span t-field="o.amount"/>
+                                            </t>
+                                            <t t-if="not o.amount">0.00 ج.م</t>
+                                        </td>
+                                        <td>
+                                            <t t-if="o.name">
+                                                <t t-esc="o.name"/>
+                                            </t>
+                                            <t t-if="not o.name">1 من 1</t>
+                                        </td>
+                                        <td>
+                                            <t t-if="o.date">
+                                                <span t-field="o.date"/>
+                                            </t>
+                                            <t t-if="not o.date">
+                                                <span t-esc="context_today().strftime('%d/%m/%Y')"/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
 
-            </div>
-        </t>
-    </t>
-</template>
+                        <!-- Totals Section -->
+                        <div class="totals-section">
+                            <table class="totals-table">
+                                <tr>
+                                    <td>الإجمالي:</td>
+                                    <td style="text-align: left;">
+                                        <t t-if="o.amount">
+                                            <span t-field="o.amount"/>
+                                        </t>
+                                        <t t-if="not o.amount">0.00 ج.م</t>
+                                    </td>
+                                </tr>
+                                <tr class="total-row">
+                                    <td>إجمالي المدفوع:</td>
+                                    <td style="text-align: left;">
+                                        <t t-if="o.amount">
+                                            <span t-field="o.amount"/>
+                                        </t>
+                                        <t t-if="not o.amount">0.00 ج.م</t>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+    </template>
+
 </odoo>
