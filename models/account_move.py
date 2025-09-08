@@ -145,6 +145,8 @@ class Installments(models.Model):
 
     account_move_id = fields.Many2one('account.move', ondelete='cascade')
 
+    partner_id = fields.Many2one('res.partner', related='account_move_id.partner_id', string="Customer")
+
     date = fields.Date()
     name = fields.Char()
     amount = fields.Float()

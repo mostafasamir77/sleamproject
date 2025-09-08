@@ -1,17 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
+
+    <record id="installments_view_list" model="ir.ui.view">
+        <field name="name">Installments</field>
+        <field name="model">account.installments</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="date" />
+                <field name="name" />
+                <field name="amount" />
+                <field name="paid_amount" />
+                <field name="remaining" />
+                <field name="state" />
+                <field name="payment_state" 
+                        widget="badge"
+                        decoration-success="payment_state == 'fully_paid'"
+                        decoration-primary="payment_state == 'paid'"
+                        decoration-danger="payment_state == 'partial'"/>
+            </list>
+        </field>
+    </record>
+
     <record id="installments_view_form" model="ir.ui.view">
         <field name="name">installments.view.form</field>
         <field name="model">account.installments</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <field name="state" widget="statusbar" />
+                </header>
                 <sheet>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name"/>
+                            </h1>
+                        </div>
+
+                        <field name="payment_state"
+                            widget="badge"
+                            class="ms-2"
+                            decoration-success="payment_state == 'fully_paid'"
+                            decoration-primary="payment_state == 'paid'"
+                            decoration-danger="payment_state == 'partial'"/>
+                    </div>
                     <group>
                         <group>
+                            <field name="partner_id" />
                             <field name="date" />
-                            <field name="name" />
-                            <field name="payment_state" />
-                            <field name="state" />
                         </group>
                         <group>
                             <field name="amount" />
@@ -24,8 +61,28 @@
         </field>
     </record>
 
+    <record id="installments_search_view" model="ir.ui.view">
+        <field name="name">installments search view</field>
+        <field name="model">account.installments</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" />
+                <field name="partner_id"/>
+                <field name="date"/>
+                <field name="remaining"/>
+                <field name="state"/>
+                <field name="payment_state"/>
+
+                <filter name="group_customer" string="Customer" context="{'group_by' : 'partner_id'}"/>
+                <filter name="group_state" string="State" context="{'group_by' : 'state'}"/>
+                <filter name="group_payment_state" string="Payment State" context="{'group_by' : 'payment_state'}"/>
+                <filter name="group_names" string="Name" context="{'group_by' : 'name'}"/>
+            </search>
+        </field>
+    </record>
+
     <record id="installment_action" model="ir.actions.act_window">
-        <field name="name">Installments Action</field>
+        <field name="name">Installments</field>
         <field name="res_model">account.installments</field>
         <field name="view_mode">list,form</field>
     </record>
