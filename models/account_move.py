@@ -25,6 +25,27 @@ class AccountMove(models.Model):
 
     installment_value = fields.Float(tracking=True, compute='_compute_installment_value')
 
+    # start totals fields
+
+    total_amount = fields.Float(compute='_compute_totals', store=True)
+    total_paid_amount = fields.Float(compute='_compute_totals', store=True)
+    total_remaining = fields.Float(compute='_compute_totals', store=True)
+    total_current_due_amount = fields.Float(compute='_compute_totals', store=True, string="Current Due Amount")
+
+    @api.depends('installments_ids.amount', 'installments_ids.paid_amount', 'installments_ids.remaining', 'installments_ids.state')
+    def _compute_totals(self):
+        for rec in self:
+            installments = rec.installments_ids
+            installments_with_due_state = installments.filtered(lambda i: i.state == 'due')
+
+            rec.total_amount = sum(installments.mapped('amount'))
+            rec.total_paid_amount = sum(installments.mapped('paid_amount'))
+            rec.total_remaining = sum(installments.mapped('remaining'))
+            rec.total_current_due_amount = sum(installments_with_due_state.mapped('remaining'))
+
+    # end totals fields
+
+
     @api.depends('advance_amount_type', 'advance_amount_value')
     def _compute_calculated_advance_amount(self):
         """ calculate the advance amount value in case it percentage or fixed amount and store it in this field """
@@ -121,6 +142,7 @@ class AccountMove(models.Model):
         action['context'] = {
                 'default_account_move_id' : self.id,
                 'default_products_in_invoice' : self.invoice_line_ids.mapped('product_id').ids,
+                'default_total_paid_amount_for_installments' : self.total_paid_amount ,
             }
         return action
 

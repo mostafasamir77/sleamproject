@@ -25,12 +25,12 @@ class RegisterPaymentButton(models.TransientModel):
 
             if payment_amount > 0:
                 # Update amounts
-                line.paid_amount += payment_amount
+                line.sudo().paid_amount += payment_amount
                 amount_value -= payment_amount
 
 
             if line.remaining == 0:
-                line.state = 'done'
+                line.sudo().state = 'done'
 
         # Create payment using the register payment wizard
         payment_wizard = self.env['account.payment.register'].with_context(

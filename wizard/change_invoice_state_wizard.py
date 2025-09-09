@@ -38,14 +38,29 @@ class ChangeInvoiceState(models.TransientModel):
     )
     
     deduct = fields.Float(string="Deduction Amount")
+
+    total_paid_amount_for_installments = fields.Float()
     
+    def create_deduction_installment(self):
+        self.env['account.installments'].sudo().create({
+            'account_move_id' : self.account_move_id.id ,
+            'date' : fields.Date.today() ,
+            'name' : 'Deduction' ,
+            'amount' : self.deduct ,
+            'paid_amount' : self.total_paid_amount_for_installments,
+            'state' : 'due' ,
+        })
+        
+
 
     def action_confirm(self):
-        if self.change_type == 'return' :
-            self.account_move_id.installments_ids.sudo().unlink()
-            
-            # self.env['account_move'].create({
-            #     'move_type': 'out_invoice' ,
-            #     # 'd': ,
-            # }) 
+        # delete all old installments
+        self.account_move_id.installments_ids.sudo().unlink()
+        
+        # creating the deduction installment
+        self.create_deduction_installment()
+
+        # if self.change_type == 'return' and  :
+
+
         

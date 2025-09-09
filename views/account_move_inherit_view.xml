@@ -37,6 +37,22 @@
                                     <button string="Print" name="%(action_print_installment)d" type="action" class="oe_highlight" invisible="payment_state != 'fully_paid' "/>
                                 </list>
                             </field>
+                            <group>
+                                <group>
+
+                                </group>
+                                <group>
+                                    <group>
+
+                                    </group>
+                                    <group>
+                                        <field name="total_amount"/>
+                                        <field name="total_paid_amount"/>
+                                        <field name="total_remaining"/>
+                                        <field name="total_current_due_amount"/>
+                                    </group>
+                                </group>
+                            </group>
                         </page>
                     </notebook>
                 </page>
@@ -44,7 +60,7 @@
 
             <xpath expr="//div[@name='button_box']" position="inside">
 
-                <button name="open_related_installments" type="object" class="oe_stat_button" icon="fa-align-justify" invisible="not installments_ids"  >
+                <button name="open_related_installments" type="object" class="oe_stat_button" icon="fa-money" invisible="not installments_ids"  >
                     <field name="installment_number" string="Installments" widget="statinfo"/>
                 </button>
             </xpath>
