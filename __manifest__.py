@@ -14,6 +14,7 @@
         'wizard/register_payment_wizard_view.xml',
         'wizard/collect_advance_amount_wizard_view.xml',
         'wizard/change_invoice_state_wizard_view.xml',
+        'wizard/pay_customer_due_amount_wizard_view.xml',
         'report/installment_report.xml',
         
     ],

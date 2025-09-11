@@ -4,9 +4,8 @@
         <field name="name">Print Installment</field>
         <field name="model">account.installments</field>
         <field name="report_type">qweb-pdf</field>
-        <field name="binding_model_id" ref="model_account_installments"/>
-        <field name="binding_type">report</field>
         <field name="report_name">installments.installment_report_template</field>
+        <field name="binding_model_id" eval="False"/>
     </record>
 
     <template id="installment_report_template">

@@ -1,4 +1,5 @@
 from odoo import api, fields, models
+from odoo.exceptions import ValidationError
 
 
 class RegisterPaymentButton(models.TransientModel):
@@ -11,7 +12,16 @@ class RegisterPaymentButton(models.TransientModel):
     date = fields.Date(default=fields.Date.today())
     payment_method_id = fields.Many2one('account.payment.method.line')
 
+    def check_if_valid_amount(self):
+        if self.amount > self.account_move_id.total_remaining :
+            raise ValidationError(f"this amount are more than the actual remaining amount: {self.account_move_id.total_remaining}")
+
+
+
     def action_register_payment(self):
+        # validation for the amount that user pay
+        self.check_if_valid_amount()
+
         installment_lines = self.account_move_id.installments_ids
         amount_value = self.amount
 

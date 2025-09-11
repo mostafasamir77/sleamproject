@@ -39,28 +39,43 @@ class ChangeInvoiceState(models.TransientModel):
     
     deduct = fields.Float(string="Deduction Amount")
 
-    total_paid_amount_for_installments = fields.Float()
     
     def create_deduction_installment(self):
-        self.env['account.installments'].sudo().create({
+        """ create one installment to the closing the invoice  """
+
+        created_installment = self.env['account.installments'].sudo().create({
             'account_move_id' : self.account_move_id.id ,
             'date' : fields.Date.today() ,
             'name' : 'Deduction' ,
             'amount' : self.deduct ,
-            'paid_amount' : self.total_paid_amount_for_installments,
+            'paid_amount' : min(self.account_move_id.total_paid_amount , self.deduct),
             'state' : 'due' ,
         })
-        
 
+        return created_installment
+        
+    # def create_invoice(self):
+    #     self.env['account.move'].create({
+    #         'move_type' : 'out_invoice',
+    #         'partner_id' : self.account_move_id.partner_id.id ,
+    #         ''
+    #     })
 
     def action_confirm(self):
         # delete all old installments
         self.account_move_id.installments_ids.sudo().unlink()
         
         # creating the deduction installment
-        self.create_deduction_installment()
+        installment_id = self.create_deduction_installment()
 
-        # if self.change_type == 'return' and  :
+        if self.change_type == 'return' :
 
+            if set(self.targeted_products_ids.ids) == set(self.account_move_id.invoice_line_ids.mapped('product_id').ids) :
+
+                if self.account_move_id.total_paid_amount == self.deduct :
+                    self.account_move_id.button_cancel()
+            
+                elif self.account_move_id.total_paid_amount > self.deduct :
+                    installment_id.sudo().customer_due_amount = self.account_move_id.total_paid_amount - self.deduct
 
         
