@@ -85,17 +85,34 @@
                 <button string="Change Invoice State"
                         name="change_invoice_state_action" 
                         type="object" 
+                        invisible="move_type != 'out_invoice' "
                         class="oe_highlight"/>
 
                 <button string="Pay Customer Due Amount" 
                         name="pay_customer_due_amount_action" 
                         type="object" 
+                        invisible="move_type != 'out_invoice' "
                         class="btn-secondary"/>
 
             </xpath>    
 
             <xpath expr="//button[@name='button_draft']" position="attributes">
-                <attribute name="invisible">matched_payment_ids or state == 'draft'</attribute>
+                <attribute name="invisible">move_type == 'out_invoice' and (matched_payment_ids or state == 'draft')</attribute>     
+            </xpath>
+
+            <!-- hide the credit note button -->
+            <xpath expr="//button[@name='action_reverse']" position="attributes">
+                <attribute name="invisible">move_type == 'out_invoice'</attribute>
+            </xpath>      
+            
+            <!-- hide the preview button -->
+            <xpath expr="//button[@name='preview_invoice']" position="attributes">
+                <attribute name="invisible">move_type == 'out_invoice'</attribute>
+            </xpath>
+            
+            <!-- hide the sent button -->
+            <xpath expr="//button[@name='action_invoice_sent']" position="attributes">
+                <attribute name="invisible">move_type == 'out_invoice'</attribute>
             </xpath>
 
             <xpath expr="//button[@id='account_invoice_payment_btn']" position="replace"/>
