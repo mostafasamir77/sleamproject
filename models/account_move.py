@@ -7,7 +7,8 @@ class AccountMove(models.Model):
     _inherit = 'account.move'
 
     installments_ids = fields.One2many('account.installments', 'account_move_id')
-
+    created_invoice_id = fields.Many2one('account.move')
+    is_returned_or_replaced = fields.Boolean()
     installment_number = fields.Integer(tracking=True, default=1)
     first_installment_date = fields.Date(tracking=True, required=True, default=fields.Date.today())
     first_installment_value = fields.Float()
@@ -47,9 +48,10 @@ class AccountMove(models.Model):
         for rec in self:
             installments = rec.installments_ids
             installments_with_due_state = installments.filtered(lambda i: i.state == 'due')
+            payments_with_paid_or_in_progress_state = rec.matched_payment_ids.filtered(lambda p: p.state in ['in_process', 'paid'] )
 
             rec.total_amount = sum(installments.mapped('amount'))
-            rec.total_paid_amount = sum(rec.matched_payment_ids.mapped('amount'))
+            rec.total_paid_amount = sum(payments_with_paid_or_in_progress_state.mapped('amount'))
             rec.total_remaining = sum(installments.mapped('remaining'))
             rec.total_current_due_amount = sum(installments_with_due_state.mapped('remaining'))
 
@@ -208,12 +210,7 @@ class AccountMove(models.Model):
         return action
 
 
-    def pay_customer_due_amount_action(self):
-        """ Open wizard view """
 
-        action = self.env['ir.actions.actions']._for_xml_id('installments.pay_customer_due_amount_wizard_action')
-        action['context'] = {'default_account_move_id' : self.id}
-        return action
 
     def open_related_installments(self):
         self.ensure_one()
@@ -228,7 +225,19 @@ class AccountMove(models.Model):
             ],
             'target': 'current',
         }
+    
+    def open_created_invoice(self):
+        self.ensure_one()
 
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Invoice',
+            'res_model': 'account.move',
+            'res_id': self.created_invoice_id.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
+    
 
 class Installments(models.Model):
     _name = 'account.installments'

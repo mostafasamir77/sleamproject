@@ -7,10 +7,10 @@ class RegisterPaymentButton(models.TransientModel):
 
     account_move_id = fields.Many2one('account.move')
 
-    journal_id = fields.Many2one('account.journal')
+    journal_id = fields.Many2one('account.journal', domain="[('type','in', ('cash','bank') )]", required=True )
     amount = fields.Float()
-    date = fields.Date(default=fields.Date.today())
-    payment_method_id = fields.Many2one('account.payment.method.line')
+    date = fields.Date(default=fields.Date.today(), required=True)
+    payment_method_id = fields.Many2one('account.payment.method.line',required=True)
 
     def check_if_valid_amount(self):
         if self.amount > self.account_move_id.total_remaining :

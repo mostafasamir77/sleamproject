@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-09-10 14:09+0000\n"
-"PO-Revision-Date: 2025-09-10 19:24+0300\n"
+"PO-Revision-Date: 2025-09-15 06:54+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ar\n"
@@ -55,7 +55,7 @@ msgstr ""
 #. module: installments
 #: model:ir.model.fields,field_description:installments.field_change_invoice_state_button__change_type
 msgid "Action Type"
-msgstr ""
+msgstr "نوع التغير"
 
 #. module: installments
 #: model_terms:ir.ui.view,arch_db:installments.account_move_inherit_view
@@ -77,7 +77,7 @@ msgstr "نوع المقدم"
 #: model:ir.model.fields,field_description:installments.field_account_bank_statement_line__advance_amount_value
 #: model:ir.model.fields,field_description:installments.field_account_move__advance_amount_value
 msgid "Advance Amount Value"
-msgstr ""
+msgstr "قيمة المقدم"
 
 #. module: installments
 #: model:ir.model.fields,field_description:installments.field_account_installments__amount
@@ -105,7 +105,7 @@ msgstr "إلغاء"
 #: model:ir.actions.act_window,name:installments.change_invoice_state_button_wizard_action
 #: model_terms:ir.ui.view,arch_db:installments.account_move_inherit_view
 msgid "Change Invoice State"
-msgstr ""
+msgstr "تعديل العقد"
 
 #. module: installments
 #: model:ir.model,name:installments.model_change_invoice_state_button

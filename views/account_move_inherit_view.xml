@@ -38,7 +38,7 @@
                                     <field name="remaining_customer_due_amount" invisible="customer_due_amount == 0"/>
                                     <field name="payment_state" />
                                     <field name="state" />
-                                    <button string="Print" name="%(action_print_installment)d" type="action" class="oe_highlight" invisible="payment_state != 'fully_paid' "/>
+                                    <button string="Print" name="%(installments.action_print_installment)d" type="action" class="oe_highlight" invisible="payment_state != 'fully_paid' "/>
                                 </list>
                             </field>
                             <group>
@@ -67,6 +67,8 @@
                 <button name="open_related_installments" type="object" class="oe_stat_button" icon="fa-money" invisible="not installments_ids"  >
                     <field name="installment_number" string="Installments" widget="statinfo"/>
                 </button>
+
+                <button name="open_created_invoice" string="New Invoice" type="object" class="oe_stat_button" icon="fa-paperclip" invisible="not created_invoice_id"/>
             </xpath>
 
             <xpath expr="//header" position="inside">
@@ -85,13 +87,7 @@
                 <button string="Change Invoice State"
                         name="change_invoice_state_action" 
                         type="object" 
-                        invisible="move_type != 'out_invoice' "
-                        class="oe_highlight"/>
-
-                <button string="Pay Customer Due Amount" 
-                        name="pay_customer_due_amount_action" 
-                        type="object" 
-                        invisible="move_type != 'out_invoice' "
+                        invisible="move_type != 'out_invoice' or (state != 'posted' or is_returned_or_replaced == True) "
                         class="btn-secondary"/>
 
             </xpath>    

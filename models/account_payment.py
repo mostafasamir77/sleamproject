@@ -3,7 +3,7 @@ from odoo import models
 class AccountPayment(models.Model):
     _inherit = 'account.payment'
 
-    def unlink(self):
+    def installment_effect(self):
         for payment in self:
             # Get invoices that were reconciled with this payment
             for invoice in payment.reconciled_invoice_ids:
@@ -21,4 +21,16 @@ class AccountPayment(models.Model):
                         deduction = min(inst.paid_amount, remaining)
                         inst.sudo().paid_amount -= deduction
                         remaining -= deduction
+
+    def unlink(self):
+        self.installment_effect()
         return super().unlink()
+
+
+    def custom_cancel_button(self):
+        """ this button made for enable the user to cancel the payment directly if the payment 
+            crated by register payment button to apply the installment logic """
+
+        self.action_draft()
+        self.action_cancel()
+        self.installment_effect()

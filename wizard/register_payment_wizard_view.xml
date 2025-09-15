@@ -9,12 +9,12 @@
                 <sheet>
                     <group>
                         <group>
-                            <field name="journal_id"/>
+                            <field name="journal_id" options="{'no_create': True}" />
                             <field name="amount"/>
                         </group>
                         <group>
                             <field name="date"/>
-                            <field name="payment_method_id"/>
+                            <field name="payment_method_id" options="{'no_create': True}" />
                         </group>
                     </group>
                     <footer>

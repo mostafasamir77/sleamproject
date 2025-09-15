@@ -9,14 +9,13 @@
     ],
     'data': [
         'security/ir.model.access.csv',
+        'report/installment_report.xml',
         'views/account_move_inherit_view.xml',
         'views/installments_view.xml',
+        'views/account_payment_inherit_view.xml',
         'wizard/register_payment_wizard_view.xml',
         'wizard/collect_advance_amount_wizard_view.xml',
-        'wizard/change_invoice_state_wizard_view.xml',
-        'wizard/pay_customer_due_amount_wizard_view.xml',
-        'report/installment_report.xml',
-        
+        'wizard/change_invoice_state_wizard_view.xml',        
     ],
     'auto_install': False,
     'application': True,

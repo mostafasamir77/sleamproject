@@ -3,7 +3,6 @@ access_account_installments,access_account_installments,model_account_installmen
 access_register_payment_button,access_register_payment_button,model_register_payment_button,,1,1,1,1
 access_collect_advance_amount_button,access_collect_advance_amount_button,model_collect_advance_amount_button,,1,1,1,1
 access_change_invoice_state_button,access_change_invoice_state_button,model_change_invoice_state_button,,1,1,1,1
-access_pay_customer_due_amount_button,access_pay_customer_due_amount_button,model_pay_customer_due_amount_button,,1,1,1,1
 
 
 

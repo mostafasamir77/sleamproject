@@ -26,7 +26,8 @@ class ChangeInvoiceState(models.TransientModel):
         'invoice_button_id',
         'product_id',
         string="Targeted Products",
-        domain="[('id','in', products_in_invoice)]"
+        domain="[('id','in', products_in_invoice)]",
+        required=True
     )
 
     new_product_ids = fields.Many2many(
@@ -38,6 +39,12 @@ class ChangeInvoiceState(models.TransientModel):
     )
     
     deduct = fields.Float(string="Deduction Amount")
+
+    @api.constrains('deduct')
+    def deduct_validation(self):
+        for rec in self:
+            if rec.deduct <= 0 :
+                raise ValidationError("Deduct Amount Must Be Grater Than Zero")
 
     
     def create_deduction_installment(self):
@@ -54,14 +61,46 @@ class ChangeInvoiceState(models.TransientModel):
 
         return created_installment
         
-    # def create_invoice(self):
-    #     self.env['account.move'].create({
-    #         'move_type' : 'out_invoice',
-    #         'partner_id' : self.account_move_id.partner_id.id ,
-    #         ''
-    #     })
+    def create_invoice_for_return(self):
+
+        all_products = self.products_in_invoice
+        selected_products = self.targeted_products_ids
+
+        remaining_products = all_products - selected_products
+
+        # build invoice lines for the targeted products
+        invoice_lines = []
+        for product in remaining_products:
+            # find the matching line in the old invoice to copy quantity and price
+            old_line = self.account_move_id.invoice_line_ids.filtered(
+                lambda l: l.product_id == product
+            )[:1]  # take first match if multiple
+
+            invoice_lines.append((0, 0, {
+                'product_id': product.id,
+                'quantity': old_line.quantity,
+                'price_unit': old_line.price_unit,
+                'tax_ids': [(6, 0, old_line.tax_ids.ids)],
+                'name': old_line.name or product.name,
+            }))
+
+        # create the new invoice
+        invoice = self.env['account.move'].create({
+            # 'contract_id': self.contract_wizard_id.id,  
+            'move_type': 'out_invoice',
+            'partner_id': self.account_move_id.partner_id.id,
+            'journal_id': self.account_move_id.journal_id.id,
+            'invoice_date': self.account_move_id.invoice_date,
+            'invoice_line_ids': invoice_lines,
+        })
+
+        return invoice
+
 
     def action_confirm(self):
+        # to mark this invoice as used this button 
+        self.account_move_id.is_returned_or_replaced = True
+
         # delete all old installments
         self.account_move_id.installments_ids.sudo().unlink()
         
@@ -78,4 +117,6 @@ class ChangeInvoiceState(models.TransientModel):
                 elif self.account_move_id.total_paid_amount > self.deduct :
                     installment_id.sudo().customer_due_amount = self.account_move_id.total_paid_amount - self.deduct
 
-        
+            else :
+                invoice = self.create_invoice_for_return()
+                self.account_move_id.created_invoice_id = invoice.id

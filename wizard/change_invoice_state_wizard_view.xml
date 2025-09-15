@@ -10,12 +10,12 @@
                     <group>
                         <group>
                             <field name="change_type"/>
-                            <field name="targeted_products_ids" widget="many2many_tags" />
+                            <field name="targeted_products_ids" widget="many2many_tags" options="{'no_create': True}" />
                             
                         </group>
                         <group>
                             <field name="deduct"/>
-                            <field name="new_product_ids" widget="many2many_tags" invisible=" change_type == 'return' " />
+                            <field name="new_product_ids" widget="many2many_tags" invisible=" change_type == 'return' " options="{'no_create': True}" />
                         </group>
                     </group>
                     <footer>
