@@ -50,9 +50,9 @@ class AccountMove(models.Model):
             installments_with_due_state = installments.filtered(lambda i: i.state == 'due')
             payments_with_paid_or_in_progress_state = rec.matched_payment_ids.filtered(lambda p: p.state in ['in_process', 'paid'] )
 
-            rec.total_amount = sum(installments.mapped('amount'))
+            rec.total_amount = sum(installments.mapped('amount')) + rec.calculated_advance_amount
             rec.total_paid_amount = sum(payments_with_paid_or_in_progress_state.mapped('amount'))
-            rec.total_remaining = sum(installments.mapped('remaining'))
+            rec.total_remaining = sum(installments.mapped('remaining')) + rec.remaining_advance_amount
             rec.total_current_due_amount = sum(installments_with_due_state.mapped('remaining'))
 
     # end totals fields

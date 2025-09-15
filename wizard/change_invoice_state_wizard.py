@@ -92,6 +92,7 @@ class ChangeInvoiceState(models.TransientModel):
             'journal_id': self.account_move_id.journal_id.id,
             'invoice_date': self.account_move_id.invoice_date,
             'invoice_line_ids': invoice_lines,
+            'installment_number' : self.account_move_id.installment_number ,
         })
 
         return invoice
