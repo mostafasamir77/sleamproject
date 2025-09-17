@@ -34,8 +34,6 @@
                                     <field name="amount" />
                                     <field name="paid_amount" />
                                     <field name="remaining" />
-                                    <field name="customer_due_amount" invisible="customer_due_amount == 0"/>
-                                    <field name="remaining_customer_due_amount" invisible="customer_due_amount == 0"/>
                                     <field name="payment_state" />
                                     <field name="state" />
                                     <button string="Print" name="%(installments.action_print_installment)d" type="action" class="oe_highlight" invisible="payment_state != 'fully_paid' "/>
@@ -62,38 +60,50 @@
                 </page>
             </xpath>
 
+            <!-- adding smart buttons -->
             <xpath expr="//div[@name='button_box']" position="inside">
 
                 <button name="open_related_installments" type="object" class="oe_stat_button" icon="fa-money" invisible="not installments_ids"  >
                     <field name="installment_number" string="Installments" widget="statinfo"/>
                 </button>
 
-                <button name="open_created_invoice" string="New Invoice" type="object" class="oe_stat_button" icon="fa-paperclip" invisible="not created_invoice_id"/>
+                <button name="open_created_invoice" string="New Invoice" type="object" class="oe_stat_button" icon="fa-refresh" invisible="not created_invoice_id"/>
+                <button name="open_old_invoice" string="Old Invoice" type="object" class="oe_stat_button" icon="fa-folder-open" invisible="is_copy != True"/>
             </xpath>
 
+            <!-- adding some buttons to the header of invoice -->
             <xpath expr="//header" position="inside">
                 <button string="Register Payment" 
                         name="register_payment_action" 
                         type="object" 
-                        invisible="state != 'posted' or total_remaining == 0 " 
-                        class="btn-secondary"/>
-
-                <button string="Collect Advance Amount" 
-                        name="action_pay_advance_amount" 
-                        type="object" 
-                        invisible="state != 'draft' or remaining_advance_amount == 0"
+                        invisible="state != 'posted' or total_remaining == 0 or remaining_advance_amount != 0  " 
                         class="btn-secondary"/>
 
                 <button string="Change Invoice State"
                         name="change_invoice_state_action" 
                         type="object" 
-                        invisible="move_type != 'out_invoice' or (state != 'posted' or is_returned_or_replaced == True) "
+                        invisible="move_type != 'out_invoice' or (state != 'posted' or is_returned_or_replaced == True or remaining_advance_amount != 0) "
                         class="btn-secondary"/>
 
             </xpath>    
 
+            <!-- to make collect advance amount button appear before cancel button -->
+            <xpath expr="//button[@name='button_cancel']" position="before">
+                <button string="Collect Advance Amount" 
+                        name="action_pay_advance_amount" 
+                        type="object" 
+                        invisible="move_type != 'out_invoice' or remaining_advance_amount == 0 or state != 'draft' "
+                        class="btn-primary"/>            
+                <button string="Complete Advance Amount" 
+                        name="action_pay_advance_amount" 
+                        type="object" 
+                        invisible="move_type != 'out_invoice' or remaining_advance_amount == 0 or state == 'draft' "
+                        class="btn-secondary"/>                
+            </xpath>
+
+            <!-- hide reset to draft buttons in some cases -->
             <xpath expr="//button[@name='button_draft']" position="attributes">
-                <attribute name="invisible">move_type == 'out_invoice' and (matched_payment_ids or state == 'draft')</attribute>     
+                <attribute name="invisible">move_type == 'out_invoice' and (total_paid_amount != 0 or matched_payment_ids or state == 'draft')</attribute>     
             </xpath>
 
             <!-- hide the credit note button -->
@@ -109,6 +119,11 @@
             <!-- hide the sent button -->
             <xpath expr="//button[@name='action_invoice_sent']" position="attributes">
                 <attribute name="invisible">move_type == 'out_invoice'</attribute>
+            </xpath>
+
+            <!-- hide confirm button in some conditions -->
+            <xpath expr="(//button[@name='action_post'][@type='object'][@data-hotkey='q'])[2]" position="attributes"> 
+                <attribute name="invisible">move_type == 'out_invoice' and (remaining_advance_amount != 0 or state != 'draft' )</attribute>
             </xpath>
 
             <xpath expr="//button[@id='account_invoice_payment_btn']" position="replace"/>

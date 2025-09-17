@@ -10,7 +10,24 @@ class RegisterPaymentButton(models.TransientModel):
     journal_id = fields.Many2one('account.journal', domain="[('type','in', ('cash','bank') )]", required=True )
     amount = fields.Float()
     date = fields.Date(default=fields.Date.today(), required=True)
-    payment_method_id = fields.Many2one('account.payment.method.line',required=True)
+    payment_method_id = fields.Many2one('account.payment.method.line',
+                                        required=True,
+                                        context={'hide_payment_journal_id': 1},
+                                        domain="[('id', 'in', available_payment_method_line_ids)]")
+
+
+    # This field comes from account.payment.register
+    available_payment_method_line_ids = fields.Many2many(
+        'account.payment.method.line',
+        compute="_compute_available_payment_methods",
+        string="Available Payment Methods",
+    )
+
+    @api.onchange('journal_id')
+    def _compute_available_payment_methods(self):
+        # Example: reuse the same logic from Odoo payment wizard
+        for rec in self:
+            rec.available_payment_method_line_ids = self.journal_id.outbound_payment_method_line_ids
 
     def check_if_valid_amount(self):
         if self.amount > self.account_move_id.total_remaining :
@@ -19,6 +36,9 @@ class RegisterPaymentButton(models.TransientModel):
 
 
     def action_register_payment(self):
+        if self.account_move_id.remaining_advance_amount != 0 :
+            raise ValidationError(f"you have to pay advance amount first: {self.account_move_id.remaining_advance_amount}")
+
         # validation for the amount that user pay
         self.check_if_valid_amount()
 

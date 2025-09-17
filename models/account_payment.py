@@ -1,7 +1,9 @@
-from odoo import models
+from odoo import models,fields
 
 class AccountPayment(models.Model):
     _inherit = 'account.payment'
+
+    is_for_advance_amount = fields.Boolean(string="For Advance Amount", default=False)
 
     def installment_effect(self):
         for payment in self:
@@ -12,19 +14,24 @@ class AccountPayment(models.Model):
                     ('account_move_id', '=', invoice.id)
                 ], order="date desc")  # latest installments first
 
-                remaining = payment.amount
-                for inst in installments:
-                    if remaining <= 0:
-                        break
-                    if inst.paid_amount > 0:
-                        # Deduct from the installment (starting from the end)
-                        deduction = min(inst.paid_amount, remaining)
-                        inst.sudo().paid_amount -= deduction
-                        remaining -= deduction
+                if payment.is_for_advance_amount == True:
+                    invoice.paid_advance_amount -= payment.amount
+                    if invoice.paid_advance_amount == 0:
+                        invoice.button_draft()
+                else:
+                    remaining = payment.amount
+                    for inst in installments:
+                        if remaining <= 0:
+                            break
+                        if inst.paid_amount > 0:
+                            # Deduct from the installment (starting from the end)
+                            deduction = min(inst.paid_amount, remaining)
+                            inst.sudo().paid_amount -= deduction
+                            remaining -= deduction
 
-    def unlink(self):
-        self.installment_effect()
-        return super().unlink()
+    # def unlink(self):
+    #     self.installment_effect()
+    #     return super().unlink()
 
 
     def custom_cancel_button(self):

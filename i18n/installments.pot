@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-10 14:07+0000\n"
-"PO-Revision-Date: 2025-09-10 14:07+0000\n"
+"POT-Creation-Date: 2025-09-17 14:44+0000\n"
+"PO-Revision-Date: 2025-09-17 14:44+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -45,7 +45,6 @@ msgstr ""
 #. module: installments
 #: model:ir.model.fields,field_description:installments.field_account_installments__account_move_id
 #: model:ir.model.fields,field_description:installments.field_collect_advance_amount_button__account_move_id
-#: model:ir.model.fields,field_description:installments.field_pay_customer_due_amount_button__account_move_id
 #: model:ir.model.fields,field_description:installments.field_register_payment_button__account_move_id
 msgid "Account Move"
 msgstr ""
@@ -80,7 +79,6 @@ msgstr ""
 #. module: installments
 #: model:ir.model.fields,field_description:installments.field_account_installments__amount
 #: model:ir.model.fields,field_description:installments.field_collect_advance_amount_button__amount
-#: model:ir.model.fields,field_description:installments.field_pay_customer_due_amount_button__amount
 #: model:ir.model.fields,field_description:installments.field_register_payment_button__amount
 msgid "Amount"
 msgstr ""
@@ -92,9 +90,9 @@ msgid "Calculated Advance Amount"
 msgstr ""
 
 #. module: installments
+#: model_terms:ir.ui.view,arch_db:installments.account_payment_inherit_view
 #: model_terms:ir.ui.view,arch_db:installments.change_invoice_state_view_form
 #: model_terms:ir.ui.view,arch_db:installments.collect_advance_amount_view_form
-#: model_terms:ir.ui.view,arch_db:installments.pay_customer_due_amount_wizard_view_form
 #: model_terms:ir.ui.view,arch_db:installments.register_payment_view_form
 msgid "Cancel"
 msgstr ""
@@ -121,18 +119,27 @@ msgid "Collect Advance Amount"
 msgstr ""
 
 #. module: installments
+#: model_terms:ir.ui.view,arch_db:installments.account_move_inherit_view
+msgid "Complete Advance Amount"
+msgstr ""
+
+#. module: installments
 #: model_terms:ir.ui.view,arch_db:installments.change_invoice_state_view_form
 #: model_terms:ir.ui.view,arch_db:installments.collect_advance_amount_view_form
-#: model_terms:ir.ui.view,arch_db:installments.pay_customer_due_amount_wizard_view_form
 #: model_terms:ir.ui.view,arch_db:installments.register_payment_view_form
 msgid "Confirm"
+msgstr ""
+
+#. module: installments
+#: model:ir.model.fields,field_description:installments.field_account_bank_statement_line__created_invoice_id
+#: model:ir.model.fields,field_description:installments.field_account_move__created_invoice_id
+msgid "Created Invoice"
 msgstr ""
 
 #. module: installments
 #: model:ir.model.fields,field_description:installments.field_account_installments__create_uid
 #: model:ir.model.fields,field_description:installments.field_change_invoice_state_button__create_uid
 #: model:ir.model.fields,field_description:installments.field_collect_advance_amount_button__create_uid
-#: model:ir.model.fields,field_description:installments.field_pay_customer_due_amount_button__create_uid
 #: model:ir.model.fields,field_description:installments.field_register_payment_button__create_uid
 msgid "Created by"
 msgstr ""
@@ -141,7 +148,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:installments.field_account_installments__create_date
 #: model:ir.model.fields,field_description:installments.field_change_invoice_state_button__create_date
 #: model:ir.model.fields,field_description:installments.field_collect_advance_amount_button__create_date
-#: model:ir.model.fields,field_description:installments.field_pay_customer_due_amount_button__create_date
 #: model:ir.model.fields,field_description:installments.field_register_payment_button__create_date
 msgid "Created on"
 msgstr ""
@@ -159,14 +165,8 @@ msgid "Customer"
 msgstr ""
 
 #. module: installments
-#: model:ir.model.fields,field_description:installments.field_account_installments__customer_due_amount
-msgid "Customer Due Amount"
-msgstr ""
-
-#. module: installments
 #: model:ir.model.fields,field_description:installments.field_account_installments__date
 #: model:ir.model.fields,field_description:installments.field_collect_advance_amount_button__date
-#: model:ir.model.fields,field_description:installments.field_pay_customer_due_amount_button__date
 #: model:ir.model.fields,field_description:installments.field_register_payment_button__date
 msgid "Date"
 msgstr ""
@@ -180,7 +180,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:installments.field_account_installments__display_name
 #: model:ir.model.fields,field_description:installments.field_change_invoice_state_button__display_name
 #: model:ir.model.fields,field_description:installments.field_collect_advance_amount_button__display_name
-#: model:ir.model.fields,field_description:installments.field_pay_customer_due_amount_button__display_name
 #: model:ir.model.fields,field_description:installments.field_register_payment_button__display_name
 msgid "Display Name"
 msgstr ""
@@ -207,8 +206,19 @@ msgid "First Installment Date"
 msgstr ""
 
 #. module: installments
+#: model:ir.model.fields,field_description:installments.field_account_bank_statement_line__first_installment_value
+#: model:ir.model.fields,field_description:installments.field_account_move__first_installment_value
+msgid "First Installment Value"
+msgstr ""
+
+#. module: installments
 #: model:ir.model.fields.selection,name:installments.selection__account_move__advance_amount_type__fixed_amount
 msgid "Fixed Amount"
+msgstr ""
+
+#. module: installments
+#: model:ir.model.fields,field_description:installments.field_account_payment__is_for_advance_amount
+msgid "For Advance Amount"
 msgstr ""
 
 #. module: installments
@@ -220,7 +230,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:installments.field_account_installments__id
 #: model:ir.model.fields,field_description:installments.field_change_invoice_state_button__id
 #: model:ir.model.fields,field_description:installments.field_collect_advance_amount_button__id
-#: model:ir.model.fields,field_description:installments.field_pay_customer_due_amount_button__id
 #: model:ir.model.fields,field_description:installments.field_register_payment_button__id
 msgid "ID"
 msgstr ""
@@ -257,8 +266,19 @@ msgid "Invoice"
 msgstr ""
 
 #. module: installments
+#: model:ir.model.fields,field_description:installments.field_account_bank_statement_line__is_copy
+#: model:ir.model.fields,field_description:installments.field_account_move__is_copy
+msgid "Is Copy"
+msgstr ""
+
+#. module: installments
+#: model:ir.model.fields,field_description:installments.field_account_bank_statement_line__is_returned_or_replaced
+#: model:ir.model.fields,field_description:installments.field_account_move__is_returned_or_replaced
+msgid "Is Returned Or Replaced"
+msgstr ""
+
+#. module: installments
 #: model:ir.model.fields,field_description:installments.field_collect_advance_amount_button__journal_id
-#: model:ir.model.fields,field_description:installments.field_pay_customer_due_amount_button__journal_id
 #: model:ir.model.fields,field_description:installments.field_register_payment_button__journal_id
 msgid "Journal"
 msgstr ""
@@ -269,10 +289,15 @@ msgid "Journal Entry"
 msgstr ""
 
 #. module: installments
+#: model:ir.model.fields,field_description:installments.field_account_bank_statement_line__last_installment_value
+#: model:ir.model.fields,field_description:installments.field_account_move__last_installment_value
+msgid "Last Installment Value"
+msgstr ""
+
+#. module: installments
 #: model:ir.model.fields,field_description:installments.field_account_installments__write_uid
 #: model:ir.model.fields,field_description:installments.field_change_invoice_state_button__write_uid
 #: model:ir.model.fields,field_description:installments.field_collect_advance_amount_button__write_uid
-#: model:ir.model.fields,field_description:installments.field_pay_customer_due_amount_button__write_uid
 #: model:ir.model.fields,field_description:installments.field_register_payment_button__write_uid
 msgid "Last Updated by"
 msgstr ""
@@ -281,7 +306,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:installments.field_account_installments__write_date
 #: model:ir.model.fields,field_description:installments.field_change_invoice_state_button__write_date
 #: model:ir.model.fields,field_description:installments.field_collect_advance_amount_button__write_date
-#: model:ir.model.fields,field_description:installments.field_pay_customer_due_amount_button__write_date
 #: model:ir.model.fields,field_description:installments.field_register_payment_button__write_date
 msgid "Last Updated on"
 msgstr ""
@@ -295,6 +319,11 @@ msgstr ""
 #: model:ir.model.fields,field_description:installments.field_account_installments__name
 #: model_terms:ir.ui.view,arch_db:installments.installments_search_view
 msgid "Name"
+msgstr ""
+
+#. module: installments
+#: model_terms:ir.ui.view,arch_db:installments.account_move_inherit_view
+msgid "New Invoice"
 msgstr ""
 
 #. module: installments
@@ -313,6 +342,13 @@ msgid "Not Yet Due"
 msgstr ""
 
 #. module: installments
+#: model:ir.model.fields,field_description:installments.field_account_bank_statement_line__old_invoice_id
+#: model:ir.model.fields,field_description:installments.field_account_move__old_invoice_id
+#: model_terms:ir.ui.view,arch_db:installments.account_move_inherit_view
+msgid "Old Invoice"
+msgstr ""
+
+#. module: installments
 #: model:ir.model.fields,field_description:installments.field_account_bank_statement_line__paid_advance_amount
 #: model:ir.model.fields,field_description:installments.field_account_move__paid_advance_amount
 msgid "Paid Advance Amount"
@@ -324,24 +360,12 @@ msgid "Paid Amount"
 msgstr ""
 
 #. module: installments
-#: model:ir.model.fields,field_description:installments.field_account_installments__paid_customer_due_amount
-msgid "Paid Customer Due Amount"
-msgstr ""
-
-#. module: installments
 #: model:ir.model.fields.selection,name:installments.selection__account_installments__payment_state__partial
 msgid "Partial"
 msgstr ""
 
 #. module: installments
-#: model:ir.actions.act_window,name:installments.pay_customer_due_amount_wizard_action
-#: model_terms:ir.ui.view,arch_db:installments.account_move_inherit_view
-msgid "Pay Customer Due Amount"
-msgstr ""
-
-#. module: installments
 #: model:ir.model.fields,field_description:installments.field_collect_advance_amount_button__payment_method_id
-#: model:ir.model.fields,field_description:installments.field_pay_customer_due_amount_button__payment_method_id
 #: model:ir.model.fields,field_description:installments.field_register_payment_button__payment_method_id
 msgid "Payment Method"
 msgstr ""
@@ -350,6 +374,11 @@ msgstr ""
 #: model:ir.model.fields,field_description:installments.field_account_installments__payment_state
 #: model_terms:ir.ui.view,arch_db:installments.installments_search_view
 msgid "Payment State"
+msgstr ""
+
+#. module: installments
+#: model:ir.model,name:installments.model_account_payment
+msgid "Payments"
 msgstr ""
 
 #. module: installments
@@ -404,11 +433,6 @@ msgid "Remaining Advance Amount"
 msgstr ""
 
 #. module: installments
-#: model:ir.model.fields,field_description:installments.field_account_installments__remaining_customer_due_amount
-msgid "Remaining Customer Due"
-msgstr ""
-
-#. module: installments
 #: model:ir.model.fields.selection,name:installments.selection__change_invoice_state_button__change_type__replace
 msgid "Replace"
 msgstr ""
@@ -442,11 +466,6 @@ msgid "Total Paid Amount"
 msgstr ""
 
 #. module: installments
-#: model:ir.model.fields,field_description:installments.field_change_invoice_state_button__total_paid_amount_for_installments
-msgid "Total Paid Amount For Installments"
-msgstr ""
-
-#. module: installments
 #: model:ir.model.fields,field_description:installments.field_account_bank_statement_line__total_remaining
 #: model:ir.model.fields,field_description:installments.field_account_move__total_remaining
 msgid "Total Remaining"
@@ -460,11 +479,6 @@ msgstr ""
 #. module: installments
 #: model:ir.model,name:installments.model_collect_advance_amount_button
 msgid "collect.advance.amount.button"
-msgstr ""
-
-#. module: installments
-#: model:ir.model,name:installments.model_pay_customer_due_amount_button
-msgid "pay.customer.due.amount.button"
 msgstr ""
 
 #. module: installments

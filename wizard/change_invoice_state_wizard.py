@@ -66,23 +66,29 @@ class ChangeInvoiceState(models.TransientModel):
         all_products = self.products_in_invoice
         selected_products = self.targeted_products_ids
 
-        remaining_products = all_products - selected_products
+        remaining_products = (all_products - selected_products) if self.change_type == 'return' else ( (all_products - selected_products) + self.new_product_ids )
 
         # build invoice lines for the targeted products
         invoice_lines = []
         for product in remaining_products:
             # find the matching line in the old invoice to copy quantity and price
+            
             old_line = self.account_move_id.invoice_line_ids.filtered(
                 lambda l: l.product_id == product
             )[:1]  # take first match if multiple
-
-            invoice_lines.append((0, 0, {
-                'product_id': product.id,
-                'quantity': old_line.quantity,
-                'price_unit': old_line.price_unit,
-                'tax_ids': [(6, 0, old_line.tax_ids.ids)],
-                'name': old_line.name or product.name,
-            }))
+            if old_line :
+                invoice_lines.append((0, 0, {
+                    'product_id': product.id,
+                    'quantity': old_line.quantity,
+                    'price_unit': old_line.price_unit,
+                    'tax_ids': [(6, 0, old_line.tax_ids.ids)],
+                    'name': old_line.name or product.name,
+                }))
+            else:
+                invoice_lines.append((0, 0, {
+                    'product_id': product.id,
+                    # 'name': old_line.name or product.name,
+                }))
 
         # create the new invoice
         invoice = self.env['account.move'].create({
@@ -115,9 +121,27 @@ class ChangeInvoiceState(models.TransientModel):
                 if self.account_move_id.total_paid_amount == self.deduct :
                     self.account_move_id.button_cancel()
             
-                elif self.account_move_id.total_paid_amount > self.deduct :
-                    installment_id.sudo().customer_due_amount = self.account_move_id.total_paid_amount - self.deduct
+                # elif self.account_move_id.total_paid_amount > self.deduct :
+                #     installment_id.sudo().customer_due_amount = self.account_move_id.total_paid_amount - self.deduct
 
             else :
+                # create the invoice 
                 invoice = self.create_invoice_for_return()
+                # mark the invoice as copied 
+                invoice.is_copy = True
+                # assign value to old invoice id to indicates for old invoice 
+                invoice.old_invoice_id = self.account_move_id.id
+                # assign value to created invoice id to indicates for new invoice 
                 self.account_move_id.created_invoice_id = invoice.id
+        else:
+            if self.new_product_ids :
+                # create the invoice 
+                invoice = self.create_invoice_for_return()
+                # mark the invoice as copied 
+                invoice.is_copy = True
+                # assign value to old invoice id to indicates for old invoice 
+                invoice.old_invoice_id = self.account_move_id.id
+                # assign value to created invoice id to indicates for new invoice 
+                self.account_move_id.created_invoice_id = invoice.id
+            else :
+                raise ValidationError("you have to to put at least one product in new products field")

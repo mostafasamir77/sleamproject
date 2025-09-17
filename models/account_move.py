@@ -8,7 +8,9 @@ class AccountMove(models.Model):
 
     installments_ids = fields.One2many('account.installments', 'account_move_id')
     created_invoice_id = fields.Many2one('account.move')
-    is_returned_or_replaced = fields.Boolean()
+    old_invoice_id = fields.Many2one('account.move')
+    is_returned_or_replaced = fields.Boolean(default=False)
+    is_copy = fields.Boolean(default=False)
     installment_number = fields.Integer(tracking=True, default=1)
     first_installment_date = fields.Date(tracking=True, required=True, default=fields.Date.today())
     first_installment_value = fields.Float()
@@ -43,16 +45,19 @@ class AccountMove(models.Model):
         'matched_payment_ids',
         'matched_payment_ids.amount',
         'matched_payment_ids.state',
+        'paid_advance_amount',
     )  
     def _compute_totals(self):
         for rec in self:
             installments = rec.installments_ids
             installments_with_due_state = installments.filtered(lambda i: i.state == 'due')
-            payments_with_paid_or_in_progress_state = rec.matched_payment_ids.filtered(lambda p: p.state in ['in_process', 'paid'] )
+            payments_with_paid_or_in_progress_state = rec.matched_payment_ids.filtered(lambda p: p.state in ['in_process', 'paid'] and p.is_for_advance_amount != True)
+            total_paid_amount_register_payment = sum(payments_with_paid_or_in_progress_state.mapped('amount'))
 
-            rec.total_amount = sum(installments.mapped('amount')) + rec.calculated_advance_amount
-            rec.total_paid_amount = sum(payments_with_paid_or_in_progress_state.mapped('amount'))
-            rec.total_remaining = sum(installments.mapped('remaining')) + rec.remaining_advance_amount
+
+            rec.total_amount = sum(installments.mapped('amount'))
+            rec.total_paid_amount = total_paid_amount_register_payment if rec.is_returned_or_replaced != True else total_paid_amount_register_payment + rec.paid_advance_amount
+            rec.total_remaining = sum(installments.mapped('remaining')) 
             rec.total_current_due_amount = sum(installments_with_due_state.mapped('remaining'))
 
     # end totals fields
@@ -82,6 +87,7 @@ class AccountMove(models.Model):
         'installment_number',
         'first_installment_value',
         'last_installment_value',
+        'amount_tax',
     )
     def _compute_installment_value(self):
         """Calculate the value of each installment."""
@@ -91,7 +97,8 @@ class AccountMove(models.Model):
                 raise UserError("Installment number must be greater than zero")
 
             # Total invoice amount
-            total_amount = rec.amount_residual
+            total_price_sub_total = sum(rec.invoice_line_ids.mapped('price_subtotal'))
+            total_amount = total_price_sub_total + rec.amount_tax
 
             # Deduct advance amount + first + last installments
             first = rec.first_installment_value or 0.0
@@ -148,8 +155,25 @@ class AccountMove(models.Model):
     def action_post(self):
         res = super().action_post()
         
-        if self.remaining_advance_amount != 0:
-            raise UserError(f"you have to pay advance amount first: {self.remaining_advance_amount}")
+        if self.is_copy == True and self.old_invoice_id :
+            amount = self.old_invoice_id.total_paid_amount - self.old_invoice_id.total_amount 
+            if amount > 0 :
+                installment_lines = self.installments_ids
+
+                for line in installment_lines :
+
+                    # Calculate payment amount for this line
+                    payment_amount = min(line.remaining, amount)
+
+
+                    if payment_amount > 0:
+                        # Update amounts
+                        line.sudo().paid_amount += payment_amount
+                        amount -= payment_amount
+
+
+                    if line.remaining == 0:
+                        line.sudo().state = 'done'
 
         return res
 
@@ -168,7 +192,6 @@ class AccountMove(models.Model):
         tracked_fields = {
             'first_installment_date',
             'installment_number',
-            'vehicle_price',
             'advance_amount_type',
             'advance_amount_value',
             'first_installment_value',
@@ -181,6 +204,7 @@ class AccountMove(models.Model):
                 rec.create_installments_lines()
 
         return res
+
 
     def action_pay_advance_amount(self):
         """ Open wizard view """
@@ -236,6 +260,18 @@ class AccountMove(models.Model):
             'res_id': self.created_invoice_id.id,
             'view_mode': 'form',
             'target': 'current',
+        }    
+        
+    def open_old_invoice(self):
+        self.ensure_one()
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Invoice',
+            'res_model': 'account.move',
+            'res_id': self.old_invoice_id.id,
+            'view_mode': 'form',
+            'target': 'current',
         }
     
 
@@ -262,10 +298,6 @@ class Installments(models.Model):
         ('late','Late'),
         ('done','Done'),
     ],default="not_yet_due")
-
-    customer_due_amount = fields.Float()
-    paid_customer_due_amount = fields.Float()
-    remaining_customer_due_amount = fields.Float(compute='_compute_remaining_customer_due_amount',store=True,string="Remaining Customer Due")
 
 
     def automated_action_check_installments_state(self):
@@ -298,9 +330,3 @@ class Installments(models.Model):
             else:
                 rec.payment_state = 'partial'
 
-    @api.depends('customer_due_amount','paid_customer_due_amount')
-    def _compute_remaining_customer_due_amount(self):
-        """ this for compute the value of remaining_customer_due_amount if the customer will get mony back """
-
-        for rec in self:
-            rec.remaining_customer_due_amount = rec.customer_due_amount - rec.paid_customer_due_amount
