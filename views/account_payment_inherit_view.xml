@@ -7,23 +7,23 @@
         <field name="inherit_id" ref="account.view_account_payment_form"/>
         <field name="arch" type="xml">
 
-            <xpath expr="//header" position="inside">
+            <!-- <xpath expr="//header" position="inside">
                 <button string="Cancel" 
                         name="custom_cancel_button" 
                         type="object"
                         invisible="state == 'canceled' or state == 'draft' "
                         class="oe_highlight"/>
-            </xpath>
+            </xpath> -->
 
             <!-- hide reset to draft button -->
-            <xpath expr="//button[@name='action_draft']" position="attributes">
+            <!-- <xpath expr="//button[@name='action_draft']" position="attributes">
                 <attribute name="invisible">1</attribute>
-            </xpath>
+            </xpath> -->
 
             <!-- make cancel button visible -->
-            <xpath expr="//button[@name='action_cancel']" position="attributes">
+            <!-- <xpath expr="//button[@name='action_cancel']" position="attributes">
                 <attribute name="invisible">1</attribute>
-            </xpath>
+            </xpath> -->
 
             <!-- hide mark as sent button -->
             <xpath expr="//button[@name='mark_as_sent']" position="attributes">

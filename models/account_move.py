@@ -1,5 +1,5 @@
 from odoo import fields, models,api
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError,ValidationError
 from dateutil.relativedelta import relativedelta
 
 
@@ -11,6 +11,8 @@ class AccountMove(models.Model):
     old_invoice_id = fields.Many2one('account.move')
     is_returned_or_replaced = fields.Boolean(default=False)
     is_copy = fields.Boolean(default=False)
+    reconciled_payments_count = fields.Integer(compute='_compute_reconciled_payments_count')
+    installment_count = fields.Integer(compute='_compute_installment_count')
     installment_number = fields.Integer(tracking=True, default=1)
     first_installment_date = fields.Date(tracking=True, required=True, default=fields.Date.today())
     first_installment_value = fields.Float()
@@ -37,7 +39,22 @@ class AccountMove(models.Model):
     total_remaining = fields.Float(compute='_compute_totals', store=True)
     total_current_due_amount = fields.Float(compute='_compute_totals', store=True, string="Current Due Amount")
 
+    paid_total = fields.Float(compute='_compute_paid_total', store=True)
+
+    @api.depends('amount_total', 'amount_residual')
+    def _compute_paid_total(self):
+        """
+        Compute paid total and trigger distribution when values change
+        """
+        for rec in self:
+            # Calculate paid amount
+            rec.paid_total = rec.amount_total - rec.amount_residual
+            # Trigger distribution
+            rec.distribute_paid_amount()
+
+
     @api.depends(
+        'installments_ids',
         'installments_ids.amount',
         'installments_ids.paid_amount',
         'installments_ids.remaining',
@@ -51,12 +68,9 @@ class AccountMove(models.Model):
         for rec in self:
             installments = rec.installments_ids
             installments_with_due_state = installments.filtered(lambda i: i.state == 'due')
-            payments_with_paid_or_in_progress_state = rec.matched_payment_ids.filtered(lambda p: p.state in ['in_process', 'paid'] and p.is_for_advance_amount != True)
-            total_paid_amount_register_payment = sum(payments_with_paid_or_in_progress_state.mapped('amount'))
-
 
             rec.total_amount = sum(installments.mapped('amount'))
-            rec.total_paid_amount = total_paid_amount_register_payment if rec.is_returned_or_replaced != True else total_paid_amount_register_payment + rec.paid_advance_amount
+            rec.total_paid_amount = sum(installments.mapped('paid_amount'))
             rec.total_remaining = sum(installments.mapped('remaining')) 
             rec.total_current_due_amount = sum(installments_with_due_state.mapped('remaining'))
 
@@ -97,8 +111,7 @@ class AccountMove(models.Model):
                 raise UserError("Installment number must be greater than zero")
 
             # Total invoice amount
-            total_price_sub_total = sum(rec.invoice_line_ids.mapped('price_subtotal'))
-            total_amount = total_price_sub_total + rec.amount_tax
+            total_amount = rec.amount_total
 
             # Deduct advance amount + first + last installments
             first = rec.first_installment_value or 0.0
@@ -122,62 +135,176 @@ class AccountMove(models.Model):
             # Final value per installment
             rec.installment_value = remaining / divisor
             
+    @api.depends('amount_residual')
+    def _compute_reconciled_payments_count(self):
+        for rec in self:
+            reconciled_payments = rec.line_ids.mapped(
+                    'matched_debit_ids.debit_move_id.payment_id'
+                ) | rec.line_ids.mapped(
+                    'matched_credit_ids.credit_move_id.payment_id'
+                )
+            rec.reconciled_payments_count = len(reconciled_payments)
+
+    @api.depends('installments_ids')
+    def _compute_installment_count(self):
+        for rec in self:
+            rec.installment_count = len(rec.installments_ids)
+
     def create_installments_lines(self):
         """Create installment lines for each record"""
         Installment = self.env['account.installments'].sudo()
+        if self.move_type == 'out_invoice' :
 
-        for rec in self:
-            installment_date = rec.first_installment_date
-            for i in range(rec.installment_number):
-                # Determine amount for this installment
-                if i == 0 and rec.first_installment_value > 0:
-                    amount = rec.first_installment_value
-                elif i == rec.installment_number - 1 and rec.last_installment_value > 0:
-                    amount = rec.last_installment_value
-                else:
-                    amount = rec.installment_value
+            for rec in self:
+                installment_date = rec.first_installment_date
+                for i in range(rec.installment_number):
+                    # Determine amount for this installment
+                    if i == 0 and rec.first_installment_value > 0:
+                        amount = rec.first_installment_value
+                    elif i == rec.installment_number - 1 and rec.last_installment_value > 0:
+                        amount = rec.last_installment_value
+                    else:
+                        amount = rec.installment_value
 
-                # Skip zero or negative installments
-                if amount <= 0:
+                    # Skip zero or negative installments
+                    if amount <= 0:
+                        installment_date += relativedelta(months=1)
+                        continue
+
+                    # Create the installment
+                    Installment.create({
+                        'account_move_id': rec.id,
+                        'date': installment_date,
+                        'name': f"{i + 1}/{rec.installment_number}",
+                        'amount': amount,
+                    })
+
                     installment_date += relativedelta(months=1)
-                    continue
-
-                # Create the installment
-                Installment.create({
-                    'account_move_id': rec.id,
-                    'date': installment_date,
-                    'name': f"{i + 1}/{rec.installment_number}",
-                    'amount': amount,
-                })
-
-                installment_date += relativedelta(months=1)
+        else:
+            print("this is not invoice")
 
     def action_post(self):
         res = super().action_post()
         
-        if self.is_copy == True and self.old_invoice_id :
-            amount = self.old_invoice_id.total_paid_amount - self.old_invoice_id.total_amount 
-            if amount > 0 :
-                installment_lines = self.installments_ids
+        # Get invoice receivable line
+        invoice_line = self.line_ids.filtered(
+            lambda l: l.account_id.account_type == 'asset_receivable' and not l.reconciled
+        )
 
-                for line in installment_lines :
+        payments = self.env['account.payment'].search([
+            ('partner_id', '=', self.partner_id.id),
+            ('payment_type', '=', 'inbound'),
+        ]).filtered(lambda p: not (p.move_id.has_reconciled_entries))
 
-                    # Calculate payment amount for this line
-                    payment_amount = min(line.remaining, amount)
+        # Get payment receivable line
+        payment_lines = payments.mapped('move_id.line_ids').filtered(
+            lambda l: l.account_id.account_type == 'asset_receivable' and not l.reconciled
+        )
 
-
-                    if payment_amount > 0:
-                        # Update amounts
-                        line.sudo().paid_amount += payment_amount
-                        amount -= payment_amount
-
-
-                    if line.remaining == 0:
-                        line.sudo().state = 'done'
+        # Reconcile them
+        lines_to_reconcile = invoice_line | payment_lines
+        if lines_to_reconcile:
+            lines_to_reconcile.reconcile()
 
         return res
 
 
+    def distribute_paid_amount(self):
+        """
+        Distribute payments to installments based on paid amount
+        """
+        for rec in self:
+            # Calculate amount to distribute
+            target_paid_total = rec.paid_total
+            current_paid_total = rec.total_paid_amount + rec.paid_advance_amount
+            amount_to_distribute = target_paid_total - current_paid_total
+            
+            print(f"Distributing amount: {amount_to_distribute}")
+            
+            if abs(amount_to_distribute) < 0.01:  # Float precision tolerance
+                continue
+            
+            # Handle positive distribution (payments)
+            if amount_to_distribute > 0:
+                self._distribute_positive_amount(rec, amount_to_distribute)
+            
+            # Handle negative distribution (unreconciliation)
+            else:
+                self._distribute_negative_amount(rec, abs(amount_to_distribute))
+
+    def _distribute_positive_amount(self, record, amount_to_distribute):
+        """Distribute positive amount - pay advance first if applicable"""
+        
+        # First, handle advance payment if there's remaining advance amount
+        if record.calculated_advance_amount > 0 and record.remaining_advance_amount > 0:
+            # Calculate how much we can apply to the advance
+            advance_payment = min(record.remaining_advance_amount, amount_to_distribute)
+            
+            if advance_payment > 0:
+                # Apply payment to advance amount
+                record.paid_advance_amount += advance_payment
+                amount_to_distribute -= advance_payment
+                print(f"Applied {advance_payment} to advance payment. Remaining to distribute: {amount_to_distribute}")
+        
+        # If there's still amount to distribute after handling advance, distribute to installments
+        if amount_to_distribute > 0:
+            # Get installments in order (oldest first)
+            installments = record.installments_ids.sorted(key=lambda r: r.date or r.create_date)
+            
+            for line in installments:
+                if amount_to_distribute <= 0:
+                    break
+                    
+                if line.payment_state != 'fully_paid':
+                    # Calculate available amount in this installment
+                    available = line.amount - line.paid_amount
+                    payment_amount = min(available, amount_to_distribute)
+                    
+                    if payment_amount > 0:
+                        # Update installment
+                        line.sudo().write({
+                            'paid_amount': line.paid_amount + payment_amount
+                        })
+                        amount_to_distribute -= payment_amount
+                        
+                        # Update installment state based on payment status
+                        line.automated_action_check_installments_state()
+                        print(f"Applied {payment_amount} to installment {line.name}. Remaining: {amount_to_distribute}")
+
+    def _distribute_negative_amount(self, record, amount_to_reduce):
+        """Distribute negative amount - reduce installments completely first, then advance"""
+        
+        # First, try to reduce installments as much as possible
+        installments = record.installments_ids.sorted(
+            key=lambda r: r.date or r.create_date, 
+            reverse=True
+        )
+        
+        for line in installments:
+            if amount_to_reduce <= 0:
+                break
+
+            if line.paid_amount > 0:
+                reduction = min(line.paid_amount, amount_to_reduce)
+                line.sudo().write({
+                    'paid_amount': line.paid_amount - reduction
+                })
+                amount_to_reduce -= reduction
+                line.automated_action_check_installments_state()
+                print(f"Reduced {reduction} from installment {line.name}. Remaining to reduce: {amount_to_reduce}")
+        
+        # Only reduce advance if all installments have been reduced to zero
+        if amount_to_reduce > 0 and record.paid_advance_amount > 0:
+            # Check if all installments are at zero
+            total_installment_paid = sum(record.installments_ids.mapped('paid_amount'))
+            if total_installment_paid == 0:
+                reduction_from_advance = min(record.paid_advance_amount, amount_to_reduce)
+                record.paid_advance_amount -= reduction_from_advance
+                amount_to_reduce -= reduction_from_advance
+                print(f"Reduced {reduction_from_advance} from advance payment. Remaining to reduce: {amount_to_reduce}")
+            else:
+                print(f"Cannot reduce advance payment until all installments are zero. Installments still have: {total_installment_paid}")
+                
     @api.model
     def create(self, vals):
         """Create method - receives vals dict, returns created record"""
@@ -196,6 +323,7 @@ class AccountMove(models.Model):
             'advance_amount_value',
             'first_installment_value',
             'last_installment_value',
+            'amount_total'
         }
 
         if tracked_fields.intersection(vals.keys()):
@@ -273,7 +401,47 @@ class AccountMove(models.Model):
             'view_mode': 'form',
             'target': 'current',
         }
-    
+
+
+    def open_reconciled_payments(self):
+        self.ensure_one()
+
+        for rec in self:
+            reconciled_payments = rec.line_ids.mapped(
+                    'matched_debit_ids.debit_move_id.payment_id'
+                ) | rec.line_ids.mapped(
+                    'matched_credit_ids.credit_move_id.payment_id'
+                )
+        
+            return reconciled_payments._get_records_action()
+
+
+
+    def test_button(self):
+        for rec in self:
+            # Get reconciled payments
+            reconciled_payments = rec.line_ids.mapped(
+                'matched_debit_ids.debit_move_id.payment_id'
+            ) | rec.line_ids.mapped(
+                'matched_credit_ids.credit_move_id.payment_id'
+            )
+
+            payments = self.env['account.payment'].search([
+                ('partner_id', '=', rec.partner_id.id),
+                ('payment_type', '=', 'inbound'),
+            ]).filtered(lambda p: not (p.move_id.has_reconciled_entries))
+            # Get the payments from the move lines
+
+
+            # Get unreconciled payments (simple version)
+            unreconciled_payments = payments
+
+            print(f"Reconciled payments: {reconciled_payments}")
+            print("#" * 50)
+            print(f"Unreconciled payments: {unreconciled_payments}")
+            print("=" * 80)
+
+
 
 class Installments(models.Model):
     _name = 'account.installments'

@@ -64,20 +64,24 @@
             <xpath expr="//div[@name='button_box']" position="inside">
 
                 <button name="open_related_installments" type="object" class="oe_stat_button" icon="fa-money" invisible="not installments_ids"  >
-                    <field name="installment_number" string="Installments" widget="statinfo"/>
+                    <field name="installment_count" string="Installments" widget="statinfo"/>
                 </button>
 
+                <button name="open_reconciled_payments" type="object" class="oe_stat_button" icon="fa-bars" invisible="reconciled_payments_count == 0 or move_type != 'out_invoice'">
+                    <field name="reconciled_payments_count" string="Payments" widget="statinfo"/>
+                </button>
+                
                 <button name="open_created_invoice" string="New Invoice" type="object" class="oe_stat_button" icon="fa-refresh" invisible="not created_invoice_id"/>
                 <button name="open_old_invoice" string="Old Invoice" type="object" class="oe_stat_button" icon="fa-folder-open" invisible="is_copy != True"/>
             </xpath>
 
             <!-- adding some buttons to the header of invoice -->
             <xpath expr="//header" position="inside">
-                <button string="Register Payment" 
+                <!-- <button string="Register Payment" 
                         name="register_payment_action" 
                         type="object" 
                         invisible="state != 'posted' or total_remaining == 0 or remaining_advance_amount != 0  " 
-                        class="btn-secondary"/>
+                        class="btn-secondary"/> -->
 
                 <button string="Change Invoice State"
                         name="change_invoice_state_action" 
@@ -85,10 +89,13 @@
                         invisible="move_type != 'out_invoice' or (state != 'posted' or is_returned_or_replaced == True or remaining_advance_amount != 0) "
                         class="btn-secondary"/>
 
+
+                <button string="test" name="test_button" type="object" class="oe_highlight"/>
+
             </xpath>    
 
             <!-- to make collect advance amount button appear before cancel button -->
-            <xpath expr="//button[@name='button_cancel']" position="before">
+            <!-- <xpath expr="//button[@name='button_cancel']" position="before">
                 <button string="Collect Advance Amount" 
                         name="action_pay_advance_amount" 
                         type="object" 
@@ -99,11 +106,11 @@
                         type="object" 
                         invisible="move_type != 'out_invoice' or remaining_advance_amount == 0 or state == 'draft' "
                         class="btn-secondary"/>                
-            </xpath>
+            </xpath> -->
 
             <!-- hide reset to draft buttons in some cases -->
             <xpath expr="//button[@name='button_draft']" position="attributes">
-                <attribute name="invisible">move_type == 'out_invoice' and (total_paid_amount != 0 or matched_payment_ids or state == 'draft')</attribute>     
+                <attribute name="invisible">not show_reset_to_draft_button or (move_type == 'out_invoice' and (total_paid_amount != 0 or matched_payment_ids or state == 'draft') ) </attribute>     
             </xpath>
 
             <!-- hide the credit note button -->
@@ -122,12 +129,42 @@
             </xpath>
 
             <!-- hide confirm button in some conditions -->
-            <xpath expr="(//button[@name='action_post'][@type='object'][@data-hotkey='q'])[2]" position="attributes"> 
-                <attribute name="invisible">move_type == 'out_invoice' and (remaining_advance_amount != 0 or state != 'draft' )</attribute>
+            <!-- <xpath expr="(//button[@name='action_post'][@type='object'][@data-hotkey='q'])[2]" position="attributes"> 
+                <attribute name="invisible">hide_post_button or move_type == 'entry' or display_inactive_currency_warning or (move_type == 'out_invoice' and remaining_advance_amount != 0)</attribute>
             </xpath>
 
-            <xpath expr="//button[@id='account_invoice_payment_btn']" position="replace"/>
-            <xpath expr="//button[@id='account_invoice_payment_secondary_btn']" position="replace"/>
+
+            <xpath expr="//button[@id='account_invoice_payment_btn']" position="attributes">
+                <attribute name="invisible">state != 'posted' or payment_state not in ('not_paid', 'partial', 'in_payment') or move_type not in ('out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt') or invoice_has_outstanding</attribute>
+            </xpath>
+            <xpath expr="//button[@id='account_invoice_payment_secondary_btn']" position="attributes">
+                <attribute name="invisible">state != 'posted' or payment_state not in ('not_paid', 'partial', 'in_payment') or move_type not in ('out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt') or not invoice_has_outstanding</attribute>
+            </xpath> -->
+
+            <!-- hide the default smart button for payments -->
+            <xpath expr="//button[@name='open_payments']" position="attributes">
+                <attribute name="invisible">not matched_payment_ids or move_type == 'out_invoice'</attribute>
+            </xpath>
+        </field>
+    </record>
+
+
+
+
+
+    <record id="view_move_search_inherit_groupby" model="ir.ui.view">
+        <field name="name">account.move.search.inherit.groupby</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+
+            <!-- Add after the existing group_by filters -->
+            <xpath expr="//search" position="inside">
+                <filter string="Return or Replace Invoices" 
+                        name="group_returned_or_replaced_invoices" 
+                        context="{'group_by': 'is_returned_or_replaced'}"/>
+            </xpath>
+
         </field>
     </record>
 

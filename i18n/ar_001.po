@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-09-17 14:47+0000\n"
-"PO-Revision-Date: 2025-09-17 17:57+0300\n"
+"PO-Revision-Date: 2025-09-20 05:55+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ar\n"
@@ -123,7 +123,7 @@ msgstr "دفع المقدم"
 #. module: installments
 #: model_terms:ir.ui.view,arch_db:installments.account_move_inherit_view
 msgid "Complete Advance Amount"
-msgstr ""
+msgstr "استكمال دفع المقدم"
 
 #. module: installments
 #: model_terms:ir.ui.view,arch_db:installments.change_invoice_state_view_form
@@ -158,7 +158,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:installments.field_account_bank_statement_line__total_current_due_amount
 #: model:ir.model.fields,field_description:installments.field_account_move__total_current_due_amount
 msgid "Current Due Amount"
-msgstr ""
+msgstr "المبلغ المستحق الحالي"
 
 #. module: installments
 #: model:ir.model.fields,field_description:installments.field_account_installments__partner_id
@@ -341,7 +341,7 @@ msgstr "غير مدفوع"
 #. module: installments
 #: model:ir.model.fields.selection,name:installments.selection__account_installments__state__not_yet_due
 msgid "Not Yet Due"
-msgstr ""
+msgstr "لم يستحق بعد"
 
 #. module: installments
 #: model:ir.model.fields,field_description:installments.field_account_bank_statement_line__old_invoice_id

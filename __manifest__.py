@@ -5,7 +5,7 @@
     'summary': '',
     'author': 'Mostafa Samir',
     'depends': [
-        'base', 'account' , 'sale_management'
+        'base', 'account'
     ],
     'data': [
         'security/ir.model.access.csv',

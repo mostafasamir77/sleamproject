@@ -55,7 +55,7 @@ class ChangeInvoiceState(models.TransientModel):
             'date' : fields.Date.today() ,
             'name' : 'Deduction' ,
             'amount' : self.deduct ,
-            'paid_amount' : min(self.account_move_id.total_paid_amount , self.deduct),
+            # 'paid_amount' : min(self.account_move_id.amount_total - self.account_move_id.amount_residual , self.deduct),
             'state' : 'due' ,
         })
 
@@ -103,24 +103,61 @@ class ChangeInvoiceState(models.TransientModel):
 
         return invoice
 
+    def adding_deduction_product(self):
+        # reset the invoice to draft state 
+        self.account_move_id.button_draft()
+        # delete the invoice lines 
+        selected_products = self.targeted_products_ids.mapped('name')
+        products_str = ", ".join(selected_products)
+
+        note = {
+                'move_id': self.account_move_id.id,
+                'display_type': 'line_note',
+                'name': f"{self.account_move_id.partner_id.name} is {self.change_type}: {products_str} ",
+            }
+
+        line = {
+                'move_id': self.account_move_id.id,
+                'product_id': self.env['product.product'].search([('id','=',5)], limit=1).id,
+                'quantity': 1.0,
+                'price_unit': self.deduct,
+            }
+
+        self.account_move_id.invoice_line_ids.unlink()
+        # create the note and the line 
+        self.env['account.move.line'].create([note,line])
+
+        self.account_move_id.action_post()
+
+    def reconcile_logic(self):
+        # Get invoice receivable line
+        invoice_line = self.account_move_id.line_ids.filtered(
+            lambda l: l.account_id.account_type == 'asset_receivable' and not l.reconciled
+        )
+
+        payments = self.env['account.payment'].search([
+            ('partner_id', '=', self.account_move_id.partner_id.id),
+            ('payment_type', '=', 'inbound'),
+        ]).filtered(lambda p: not (p.move_id.has_reconciled_entries))
+
+        # Get payment receivable line
+        payment_lines = payments.mapped('move_id.line_ids').filtered(
+            lambda l: l.account_id.account_type == 'asset_receivable' and not l.reconciled
+        )
+
+        # Reconcile them
+        lines_to_reconcile = invoice_line | payment_lines
+        if lines_to_reconcile:
+            lines_to_reconcile.reconcile()
 
     def action_confirm(self):
-        # to mark this invoice as used this button 
-        self.account_move_id.is_returned_or_replaced = True
-
-        # delete all old installments
-        self.account_move_id.installments_ids.sudo().unlink()
-        
-        # creating the deduction installment
-        installment_id = self.create_deduction_installment()
 
         if self.change_type == 'return' :
 
             if set(self.targeted_products_ids.ids) == set(self.account_move_id.invoice_line_ids.mapped('product_id').ids) :
 
                 if self.account_move_id.total_paid_amount == self.deduct :
-                    self.account_move_id.button_cancel()
-            
+                    print("from total_paid_amount == deduct ")
                 # elif self.account_move_id.total_paid_amount > self.deduct :
                 #     installment_id.sudo().customer_due_amount = self.account_move_id.total_paid_amount - self.deduct
 
@@ -145,3 +182,23 @@ class ChangeInvoiceState(models.TransientModel):
                 self.account_move_id.created_invoice_id = invoice.id
             else :
                 raise ValidationError("you have to to put at least one product in new products field")
+
+
+        # to mark this invoice as used this button 
+        self.account_move_id.is_returned_or_replaced = True
+
+
+        self.account_move_id.advance_amount_value = 0
+
+        # delete all old installments
+        self.account_move_id.installments_ids.sudo().unlink()
+        
+        # adding invoice lines to describe what happen and the to adjust the invoice amount  
+        self.adding_deduction_product()
+        
+        # creating the deduction installment
+        installment_id = self.create_deduction_installment()
+
+        # reconcile 
+        self.reconcile_logic()
+

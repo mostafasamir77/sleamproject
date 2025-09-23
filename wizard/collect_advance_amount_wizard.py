@@ -29,9 +29,6 @@ class RegisterPaymentButton(models.TransientModel):
             rec.available_payment_method_line_ids = self.journal_id.outbound_payment_method_line_ids
 
     def action_collect_advance_amount(self):
-        # change the invoice to posted state
-        if self.account_move_id.state == 'draft':
-            self.account_move_id.action_post()
 
         amount_value = self.amount
         remaining = self.account_move_id.remaining_advance_amount
@@ -42,8 +39,12 @@ class RegisterPaymentButton(models.TransientModel):
         if amount_value > remaining :
             raise UserError(f"the amount you entered is bigger than the remaining advance amount value: {remaining}")
 
-        self.account_move_id.paid_advance_amount += amount_value
+        # self.account_move_id.paid_advance_amount += amount_value
 
+        # change the invoice to posted state
+        if self.account_move_id.state == 'draft':
+            self.account_move_id.action_post()
+            
         # Create payment using the register payment wizard
         payment_wizard = self.env['account.payment.register'].with_context(
             active_model='account.move',
