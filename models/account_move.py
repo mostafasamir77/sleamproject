@@ -194,6 +194,7 @@ class AccountMove(models.Model):
         payments = self.env['account.payment'].search([
             ('partner_id', '=', self.partner_id.id),
             ('payment_type', '=', 'inbound'),
+            ('state','in', ['in_process','paid'] )
         ]).filtered(lambda p: not (p.move_id.has_reconciled_entries))
 
         # Get payment receivable line

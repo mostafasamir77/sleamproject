@@ -55,7 +55,6 @@ class ChangeInvoiceState(models.TransientModel):
             'date' : fields.Date.today() ,
             'name' : 'Deduction' ,
             'amount' : self.deduct ,
-            # 'paid_amount' : min(self.account_move_id.amount_total - self.account_move_id.amount_residual , self.deduct),
             'state' : 'due' ,
         })
 
@@ -118,7 +117,7 @@ class ChangeInvoiceState(models.TransientModel):
 
         line = {
                 'move_id': self.account_move_id.id,
-                'product_id': self.env['product.product'].search([('id','=',5)], limit=1).id,
+                'product_id': int(self.env['ir.config_parameter'].sudo().get_param('installments.deduct', default="0")),
                 'quantity': 1.0,
                 'price_unit': self.deduct,
             }
@@ -129,26 +128,6 @@ class ChangeInvoiceState(models.TransientModel):
 
         self.account_move_id.action_post()
 
-    def reconcile_logic(self):
-        # Get invoice receivable line
-        invoice_line = self.account_move_id.line_ids.filtered(
-            lambda l: l.account_id.account_type == 'asset_receivable' and not l.reconciled
-        )
-
-        payments = self.env['account.payment'].search([
-            ('partner_id', '=', self.account_move_id.partner_id.id),
-            ('payment_type', '=', 'inbound'),
-        ]).filtered(lambda p: not (p.move_id.has_reconciled_entries))
-
-        # Get payment receivable line
-        payment_lines = payments.mapped('move_id.line_ids').filtered(
-            lambda l: l.account_id.account_type == 'asset_receivable' and not l.reconciled
-        )
-
-        # Reconcile them
-        lines_to_reconcile = invoice_line | payment_lines
-        if lines_to_reconcile:
-            lines_to_reconcile.reconcile()
 
     def action_confirm(self):
 
@@ -198,7 +177,3 @@ class ChangeInvoiceState(models.TransientModel):
         
         # creating the deduction installment
         installment_id = self.create_deduction_installment()
-
-        # reconcile 
-        self.reconcile_logic()
-

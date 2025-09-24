@@ -1,0 +1,26 @@
+<odoo>
+    <data>
+        <record id="res_config_settings_view_form_inherit_installments" model="ir.ui.view">
+            <field name="name">res.config.settings.view.form.inherit.installments.custom</field>
+            <field name="model">res.config.settings</field>
+            <field name="inherit_id" ref="account.res_config_settings_view_form"/> <!-- Accounting Settings view -->
+            <field name="arch" type="xml">
+                
+                <!-- Insert after the Units of Measure block -->
+                <xpath expr="//block[@id='pay_invoice_online_setting_container']" position="after">
+                    <block title="Deduct Product" id="deduct_product_block">
+                        <setting string="Choose Deduct Product">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="deduct_product" class="col-lg-4 o_light_label"/>
+                                    <field name="deduct_product" options="{'no_create': True, 'no_open': True}"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</odoo>

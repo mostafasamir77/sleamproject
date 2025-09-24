@@ -5,7 +5,7 @@
     'summary': '',
     'author': 'Mostafa Samir',
     'depends': [
-        'base', 'account'
+        'base', 'account','purchase','invoice_stock_move'
     ],
     'data': [
         'security/ir.model.access.csv',
@@ -13,6 +13,7 @@
         'views/account_move_inherit_view.xml',
         'views/installments_view.xml',
         'views/account_payment_inherit_view.xml',
+        'views/deduct_product_block.xml',
         'wizard/register_payment_wizard_view.xml',
         'wizard/collect_advance_amount_wizard_view.xml',
         'wizard/change_invoice_state_wizard_view.xml',        
