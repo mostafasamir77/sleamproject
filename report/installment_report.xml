@@ -1,6 +1,6 @@
 <odoo>
 
-    <record id="paperformat_installment" model="report.paperformat">
+    <!-- <record id="paperformat_installment" model="report.paperformat">
         <field name="name">Installment Report Format</field>
         <field name="format">A4</field>
         <field name="margin_top">10</field>
@@ -9,7 +9,7 @@
         <field name="margin_right">10</field>
         <field name="header_line" eval="False"/>
         <field name="disable_shrinking" eval="False"/>
-    </record>
+    </record> -->
 
     <record id="action_print_installment" model="ir.actions.report">
         <field name="name">Print Installment</field>
@@ -17,11 +17,11 @@
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">installments.installment_report_template</field>
         <field name="binding_model_id" eval="False"/>
-        <field name="paperformat_id" ref="installments.paperformat_installment"/>
+        <!-- <field name="paperformat_id" ref="installments.paperformat_installment"/> -->
     </record>
 
     <template id="installment_report_template">
-        <t t-call="web.html_container">
+        <t t-call="web.external_layout">
             <t t-foreach="docs" t-as="o">
                 <t t-call="web.html_container"/>
                 <div class="page" dir="rtl">
@@ -134,7 +134,7 @@
                     </style>
 
                     <!-- Report Header -->
-                    <div class="report-header clearfix">
+                    <!-- <div class="report-header clearfix">
                         <div class="left-section">
                             <div class="report-title">تقرير الأقساط</div>
                             <div class="status-paid">الحالة: مدفوع</div>
@@ -145,7 +145,7 @@
                                 البحر الأعظم، شارع كولدير<br/>الجيزة، مصر
                             </div>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Billing and Report Details -->
                     <div class="billing-info clearfix">
